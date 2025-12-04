@@ -1,0 +1,17 @@
+{
+  "name": "dilz_code",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*"
+  ],
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "turbo": "^2.6.1"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build"
+  }
+}

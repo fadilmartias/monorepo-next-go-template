@@ -1,0 +1,38 @@
+name: 🚀 Deploy Website on Push
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  deploy-production:
+    name: 🎉 Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            bash ~/deploy.sh live
+
+  deploy-dev:
+    name: 🎉 Deploy to Dev
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Deploy using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOSTNAME }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            bash ~/deploy.sh staging

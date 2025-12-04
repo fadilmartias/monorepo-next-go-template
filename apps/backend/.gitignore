@@ -1,0 +1,40 @@
+# Binary files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# Env file
+.env
+
+# Air hot-reloader artifacts
+/tmp
+air.log
+
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+/public/uploads/tmp/images/*
+/public/uploads/tmp/docs/*
+/public/uploads/images/*
+/public/uploads/docs/*
+/public/uploads/tinymce/*
+
+!/public/uploads/tmp/images/.gitkeep
+!/public/uploads/tmp/docs/.gitkeep
+!/public/uploads/images/.gitkeep
+!/public/uploads/docs/.gitkeep
+!/public/uploads/tinymce/.gitkeep

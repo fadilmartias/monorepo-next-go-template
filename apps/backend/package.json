@@ -1,0 +1,8 @@
+{
+  "name": "backend-service",
+  "scripts": {
+    "dev": "cross-env GOCACHE=$HOME/go/cache air",
+    "build": "go build -o dist/backend main.go",
+    "start": "dist/backend"
+  }
+}
