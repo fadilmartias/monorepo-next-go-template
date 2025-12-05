@@ -10,7 +10,7 @@ bin = "./tmp/main.exe"
 delay = 1000
 
 include_ext = ["go", "tpl", "toml", "html"]
-exclude_dir = ["tmp", "public", "storage", "vendor"]
+exclude_dir = ["tmp", "public", "storage", "vendor", ".gocache"]
 
 [log]
 time = true

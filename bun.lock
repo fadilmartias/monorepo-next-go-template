@@ -6,6 +6,7 @@
       "name": "dilz-codespace",
       "devDependencies": {
         "cross-env": "^10.1.0",
+        "cross-env-shell": "^7.0.3",
         "turbo": "^2.6.1",
       },
     },
@@ -610,6 +611,8 @@
     "cropperjs": ["cropperjs@1.6.2", "", {}, "sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA=="],
 
     "cross-env": ["cross-env@10.1.0", "", { "dependencies": { "@epic-web/invariant": "^1.0.0", "cross-spawn": "^7.0.6" }, "bin": { "cross-env": "dist/bin/cross-env.js", "cross-env-shell": "dist/bin/cross-env-shell.js" } }, "sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw=="],
+
+    "cross-env-shell": ["cross-env-shell@7.0.3", "", { "bin": { "cross-env-shell": "wrapper.sh" } }, "sha512-ZEtnHInQRRzuAbmMpUqu/mk1jaZun14WdcmnpzZZ6Bpi1BLTPkbKioQ6+wkFssf+m/DpdttDpsCX6g8zU9W40A=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 

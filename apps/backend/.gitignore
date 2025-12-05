@@ -20,6 +20,9 @@ go.work
 # Env file
 .env
 
+# Go cache
+/.gocache
+
 # Air hot-reloader artifacts
 /tmp
 air.log

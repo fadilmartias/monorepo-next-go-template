@@ -8,6 +8,7 @@
   ],
   "devDependencies": {
     "cross-env": "^10.1.0",
+    "cross-env-shell": "^7.0.3",
     "turbo": "^2.6.1"
   },
   "scripts": {
