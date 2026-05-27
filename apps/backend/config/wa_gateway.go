@@ -24,3 +24,25 @@ func LoadFonnteConfig() *FonnteConfig {
 	})
 	return fonnteConfig
 }
+
+type DilztifyConfig struct {
+	BaseURL  string
+	APIKey   string
+	DeviceID string
+}
+
+var (
+	dilztifyConfig *DilztifyConfig
+	dilztifyOnce   sync.Once
+)
+
+func LoadDilztifyConfig() *DilztifyConfig {
+	dilztifyOnce.Do(func() {
+		dilztifyConfig = &DilztifyConfig{
+			BaseURL:  "https://api.whatsapp.dilztopup.com/v1/wa",
+			APIKey:   os.Getenv("DILZTIFY_API_KEY"),
+			DeviceID: os.Getenv("DILZTIFY_DEVICE_ID"),
+		}
+	})
+	return dilztifyConfig
+}

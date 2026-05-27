@@ -22,9 +22,6 @@ ps:
 	docker compose ps
 
 logs:
-	docker compose logs -f --tail=500
-
-logs:
 	docker compose logs -f --tail=500 ${SERVICE}
 
 exec-root:

@@ -9,4 +9,5 @@ services:
     env_file: .env
     restart: unless-stopped
     volumes:
-      - ./storage:/storage
+      # PERBAIKAN: Mapping folder lokal ke /app/storage di dalam container
+      - ./storage:/app/storage
