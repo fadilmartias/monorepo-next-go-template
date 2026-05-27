@@ -13,11 +13,11 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/usecases"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
+	_ "github.com/fadilmartias/dilz_code/apps/backend/docs"
 	"github.com/fadilmartias/dilz_code/apps/backend/graph"
-	"github.com/valyala/fasthttp/fasthttpadaptor"
-
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v3"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"gorm.io/gorm"
 )
 
@@ -33,6 +33,40 @@ func RegisterApiRoutes(app *fiber.App, db *gorm.DB, redis *redis.Client) {
 		return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 			Message: "Hello, World!",
 		})
+	})
+
+	app.Get("/swagger.json", func(c fiber.Ctx) error {
+		return c.SendFile("./docs/swagger.json")
+	})
+
+	app.Get("/swagger/*", func(c fiber.Ctx) error {
+		html := `<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Swagger UI</title>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css" />
+			<style>
+				body { margin: 0; padding: 0; }
+			</style>
+		</head>
+		<body>
+			<div id="swagger-ui"></div>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui-bundle.js"></script>
+			<script>
+				window.onload = function() {
+					SwaggerUIBundle({
+						url: "/swagger.json", // Arahkan ke route JSON yang kita buat di atas
+						dom_id: '#swagger-ui',
+						presets: [ SwaggerUIBundle.presets.apis ],
+					});
+				};
+			</script>
+		</body>
+		</html>`
+
+		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+		return c.SendString(html)
 	})
 
 	// ========= API V0 =========

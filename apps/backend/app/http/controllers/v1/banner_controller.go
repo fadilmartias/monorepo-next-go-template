@@ -16,6 +16,16 @@ func NewBannerController(bannerService *services.BannerService) *BannerControlle
 	return &BannerController{BannerService: bannerService}
 }
 
+// Index mengambil daftar banner yang aktif dan valid
+// @Summary Ambil daftar banner aktif
+// @Description Mengambil daftar banner yang berstatus aktif dan masih berada dalam masa berlaku (valid). Mendukung limitasi jumlah data.
+// @Tags Banners
+// @Accept json
+// @Produce json
+// @Param limit query int false "Batasan jumlah banner yang dikembalikan" default(10)
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mendapatkan data banner"
+// @Failure 500 {object} utils.OrderedErrorResponse "Gagal mendapatkan data banner"
+// @Router /v1/banners [get]
 func (ctrl *BannerController) Index(c fiber.Ctx) error {
 	limit := fiber.Query[int](c, "limit", 10)
 	banners, err := ctrl.BannerService.GetActiveAndValidBanners(limit)
@@ -31,6 +41,17 @@ func (ctrl *BannerController) Index(c fiber.Ctx) error {
 	})
 }
 
+// Process melakukan operasi Insert atau Update pada banner
+// @Summary Tambah atau Update Banner
+// @Description Memproses data payload banner. Jika field ID pada payload kosong, maka akan melakukan Insert (Tambah Banner). Jika field ID terisi, akan melakukan Update pada banner tersebut.
+// @Tags Banners
+// @Accept json
+// @Produce json
+// @Param payload body models.Banner true "Data JSON Banner"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil menambahkan atau mengupdate banner"
+// @Failure 400 {object} utils.OrderedErrorResponse "Gagal memproses data banner dari body request"
+// @Failure 500 {object} utils.OrderedErrorResponse "Gagal memproses/menyimpan banner ke database"
+// @Router /v1/banners/process [post]
 func (ctrl *BannerController) Process(c fiber.Ctx) error {
 	banner := models.Banner{}
 	if err := c.Bind().Body(&banner); err != nil {

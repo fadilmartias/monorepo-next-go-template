@@ -13,6 +13,11 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 )
 
+// @title DilZ Backend API
+// @version 1.0
+// @description Ini adalah dokumentasi API untuk backend berbasis Go Fiber.
+// @host localhost:9001
+// @BasePath /
 func main() {
 	app, db, redis := bootstrap.NewApp()
 	jobs.InitQueue(redis)

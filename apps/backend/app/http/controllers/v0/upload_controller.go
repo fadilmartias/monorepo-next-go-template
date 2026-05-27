@@ -23,6 +23,19 @@ func NewUploadController(db *gorm.DB, redis *redis.Client) *UploadController {
 	return &UploadController{DB: db, Redis: redis}
 }
 
+// Upload menangani unggahan file
+// @Summary Upload file (Gambar, Dokumen, atau TinyMCE)
+// @Description Endpoint untuk mengunggah file. Mendukung penerimaan file melalui field form-data: 'image', 'file', atau 'tinymce'. Hanya mendukung ekstensi jpg, png, webp, gif, dan svg.
+// @Tags Upload
+// @Accept multipart/form-data
+// @Produce json
+// @Param image formData file false "File gambar yang akan diupload"
+// @Param file formData file false "File dokumen/umum yang akan diupload"
+// @Param tinymce formData file false "File gambar khusus dari editor TinyMCE"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mengunggah file"
+// @Failure 400 {object} utils.OrderedErrorResponse "Gagal memproses form, field tidak ditemukan, atau tipe file tidak didukung"
+// @Failure 500 {object} utils.OrderedErrorResponse "Kesalahan konfigurasi server atau gagal menyimpan file"
+// @Router /v0/uploads [post]
 func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 	form, err := c.MultipartForm()
 	if err != nil {

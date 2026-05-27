@@ -1,0 +1,2881 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Ini adalah dokumentasi API untuk backend berbasis Go Fiber.",
+        "title": "DilZ Backend API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:9001",
+    "basePath": "/",
+    "paths": {
+        "/v0/uploads": {
+            "post": {
+                "description": "Endpoint untuk mengunggah file. Mendukung penerimaan file melalui field form-data: 'image', 'file', atau 'tinymce'. Hanya mendukung ekstensi jpg, png, webp, gif, dan svg.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Upload file (Gambar, Dokumen, atau TinyMCE)",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File gambar yang akan diupload",
+                        "name": "image",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "File dokumen/umum yang akan diupload",
+                        "name": "file",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "File gambar khusus dari editor TinyMCE",
+                        "name": "tinymce",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengunggah file",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Gagal memproses form, field tidak ditemukan, atau tipe file tidak didukung",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Kesalahan konfigurasi server atau gagal menyimpan file",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v0/{model}": {
+            "get": {
+                "description": "Mengambil daftar data berdasarkan nama model secara dinamis dengan dukungan paginasi dan filter query params.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic API"
+                ],
+                "summary": "Ambil daftar data model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nama Model (contoh: users, posts)",
+                        "name": "model",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Gunakan cache Redis (true/false)",
+                        "name": "cache",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Model tidak ditemukan di registry",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Menyimpan entri data baru ke database untuk model yang ditentukan.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic API"
+                ],
+                "summary": "Buat data baru",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nama Model",
+                        "name": "model",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data JSON yang akan disimpan",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Berhasil membuat data",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Model tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v0/{model}/{id}": {
+            "get": {
+                "description": "Mengambil satu baris data berdasarkan ID atau slug secara dinamis.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic API"
+                ],
+                "summary": "Ambil detail data model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nama Model",
+                        "name": "model",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID atau Slug data",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Set true jika mencari berdasarkan slug",
+                        "name": "slug",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Gunakan cache Redis (true/false)",
+                        "name": "cache",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil detail data",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Model tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Melakukan update data yang ada berdasarkan ID. Menggunakan PUT biasanya merepresentasikan penggantian keseluruhan baris.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic API"
+                ],
+                "summary": "Update keseluruhan data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nama Model",
+                        "name": "model",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID data",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data JSON untuk update",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengupdate data",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Menghapus (atau soft delete) data berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic API"
+                ],
+                "summary": "Hapus data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nama Model",
+                        "name": "model",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID data",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus data",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data atau model tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Melakukan update data secara parsial berdasarkan field yang dikirimkan.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Generic API"
+                ],
+                "summary": "Update parsial data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nama Model",
+                        "name": "model",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID data",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data JSON parsial untuk update",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengupdate data parsial",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/activity-logs/{id}": {
+            "get": {
+                "description": "Mengambil satu baris data riwayat aktivitas (Activity Log) berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Activity Log"
+                ],
+                "summary": "Ambil detail Activity Log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID dari Activity Log",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data activity log",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Activity Log tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan pada server",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/articles": {
+            "get": {
+                "description": "Mengambil daftar artikel yang sudah dipublikasikan (published) untuk blog CodeXtory. Mendukung limitasi jumlah data menggunakan query parameter.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Ambil daftar artikel publik",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Batasan jumlah artikel yang dikembalikan",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data article",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mendapatkan data article",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/articles/popular": {
+            "get": {
+                "description": "Mengambil daftar artikel yang paling banyak dibaca atau berstatus populer. Bisa mengecualikan artikel tertentu menggunakan parameter 'except'.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Ambil artikel populer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Batasan jumlah artikel yang dikembalikan",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID atau slug artikel yang ingin dikecualikan dari hasil",
+                        "name": "except",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data article",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Artikel tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/articles/process": {
+            "post": {
+                "description": "Memproses data payload artikel. Jika field ID pada payload kosong, maka akan melakukan Insert (Tambah Artikel). Jika field ID terisi, akan melakukan Update pada artikel tersebut.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Tambah atau Update Artikel",
+                "parameters": [
+                    {
+                        "description": "Data JSON Artikel",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Article"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menambahkan atau mengupdate artikel",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Gagal memproses data artikel dari body request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal memproses/menyimpan artikel ke database",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/articles/{slug}": {
+            "get": {
+                "description": "Mengambil satu data artikel yang dipublikasikan berdasarkan slug-nya. Terdapat opsi untuk memuat artikel terkait (related articles).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Ambil detail artikel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Slug dari artikel",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Set true untuk menyertakan artikel terkait",
+                        "name": "related",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data article",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Artikel tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/disable-2fa": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mematikan fitur Two-Factor Authentication untuk akun pengguna yang sedang login.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Two-Factor Auth"
+                ],
+                "summary": "Nonaktifkan 2FA",
+                "responses": {
+                    "200": {
+                        "description": "Sukses menghapus 2FA",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal menghapus 2FA",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/discord/callback": {
+            "get": {
+                "description": "Menangani respons balikan dari Discord.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Callback Discord OAuth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Kode otorisasi dari Discord",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/auth/discord/redirect": {
+            "get": {
+                "description": "Mengarahkan pengguna ke halaman otorisasi OAuth Discord.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Login Discord (Redirect)",
+                "responses": {}
+            }
+        },
+        "/v1/auth/facebook/callback": {
+            "get": {
+                "description": "Menangani respons balikan dari Facebook.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Callback Facebook OAuth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Kode otorisasi dari Facebook",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/auth/facebook/redirect": {
+            "get": {
+                "description": "Mengarahkan pengguna ke halaman otorisasi OAuth Facebook.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Login Facebook (Redirect)",
+                "responses": {}
+            }
+        },
+        "/v1/auth/forgot-password": {
+            "post": {
+                "description": "Meminta link token reset password dikirimkan ke email yang terdaftar.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Lupa Password",
+                "parameters": [
+                    {
+                        "description": "Email pengguna",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ForgotPasswordInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token reset password berhasil dikirim",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal memproses forgot password",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/google/callback": {
+            "get": {
+                "description": "Menangani respons balikan (code) dari Google setelah login sukses.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Callback Google OAuth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Kode otorisasi dari Google",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/auth/google/one-tap": {
+            "post": {
+                "description": "Memvalidasi kredensial Google One Tap JWT yang dikirim dari klien.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Google One Tap Login",
+                "parameters": [
+                    {
+                        "description": "Format JSON dengan property 'credential'",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil login atau membutuhkan 2FA",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error handle user google",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/google/redirect": {
+            "get": {
+                "description": "Mengarahkan (redirect) pengguna ke halaman otorisasi OAuth Google.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Login Google (Redirect)",
+                "responses": {}
+            }
+        },
+        "/v1/auth/login": {
+            "post": {
+                "description": "Memproses kredensial (email/username) dan password. Akan mengatur cookie `access_token` dan `refresh_token` jika berhasil. Mengembalikan flag khusus jika akun mengaktifkan 2FA.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login User",
+                "parameters": [
+                    {
+                        "description": "Kredensial login",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.LoginInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil atau membutuhkan 2FA",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Email atau password salah",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/login-2fa": {
+            "post": {
+                "description": "Menyelesaikan proses login dengan menggunakan `temp_token` dari tahap login pertama dan kode otentikator.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login via 2FA",
+                "parameters": [
+                    {
+                        "description": "Temp token dan kode 2FA",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.Login2FARequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Kode 2FA salah atau token kedaluwarsa",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mengakhiri sesi pengguna dengan menghapus token otentikasi dari cookie.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout User",
+                "responses": {
+                    "200": {
+                        "description": "Logged out successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to logout user",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mengambil data profil pengguna berdasarkan token otentikasi yang aktif (via Cookie/Bearer).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Dapatkan Profil User (Me)",
+                "responses": {
+                    "200": {
+                        "description": "User retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/refresh-access-token": {
+            "post": {
+                "description": "Menghasilkan `access_token` yang baru menggunakan `refresh_token` yang valid dari Cookie.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh Token",
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Token tidak ditemukan atau tidak valid",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/register": {
+            "post": {
+                "description": "Mendaftarkan pengguna baru ke dalam sistem.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Registrasi Akun Baru",
+                "parameters": [
+                    {
+                        "description": "Data pendaftaran pengguna",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RegisterInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request (Validasi gagal)",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/register-2fa": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Meng-generate secret TOTP dan URL QR Code untuk dipindai oleh Google Authenticator / Authy.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Two-Factor Auth"
+                ],
+                "summary": "Setup 2FA (TOTP)",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil generate TOTP secret",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal menyimpan kunci rahasia",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/reset-password": {
+            "post": {
+                "description": "Mengatur ulang kata sandi dengan memberikan token yang valid (didapat dari email) beserta kata sandi baru.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Reset Password",
+                "parameters": [
+                    {
+                        "description": "Token dan password baru",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ResetPasswordInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password reset berhasil",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mereset password atau token tidak valid",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/send-email-verification": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mengirimkan kembali tautan verifikasi alamat email ke pengguna yang sedang login.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Kirim Ulang Email Verifikasi",
+                "responses": {
+                    "200": {
+                        "description": "Email verifikasi berhasil dikirim",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mengirim email verifikasi",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/send-otp": {
+            "post": {
+                "description": "Mengirimkan kode OTP ke email atau WhatsApp. Bisa digunakan oleh pengguna login maupun tamu (guest).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OTP"
+                ],
+                "summary": "Kirim Kode OTP",
+                "parameters": [
+                    {
+                        "description": "Data target tujuan pengiriman OTP",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.SendOTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukses mengirim OTP",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mengirim OTP",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/steam/callback": {
+            "get": {
+                "description": "Menangani respons balikan (query params) dari Steam.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Callback Steam OpenID",
+                "responses": {}
+            }
+        },
+        "/v1/auth/steam/redirect": {
+            "get": {
+                "description": "Mengarahkan pengguna ke halaman OpenID Steam.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Login Steam (Redirect)",
+                "responses": {}
+            }
+        },
+        "/v1/auth/twitch/callback": {
+            "get": {
+                "description": "Menangani respons balikan dari Twitch.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Callback Twitch OAuth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Kode otorisasi dari Twitch",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/v1/auth/twitch/redirect": {
+            "get": {
+                "description": "Mengarahkan pengguna ke halaman otorisasi OAuth Twitch.",
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Login Twitch (Redirect)",
+                "responses": {}
+            }
+        },
+        "/v1/auth/verify-2fa": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mengaktifkan 2FA di akun dengan memvalidasi kode PIN pertama yang dimasukkan pengguna.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Two-Factor Auth"
+                ],
+                "summary": "Verifikasi Aktivasi 2FA",
+                "parameters": [
+                    {
+                        "description": "Kode OTP dari Authenticator",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.Verify2FARequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukses verifikasi 2FA",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Gagal parsing request body",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan atau token tidak valid",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/verify-email": {
+            "post": {
+                "description": "Memverifikasi bahwa email milik pengguna menggunakan token rahasia yang dikirimkan via email.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verifikasi Email",
+                "parameters": [
+                    {
+                        "description": "Token verifikasi email",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.VerifyEmailInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email verified successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Token tidak valid",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/verify-otp": {
+            "post": {
+                "description": "Memverifikasi input kode OTP yang diterima pengguna.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OTP"
+                ],
+                "summary": "Verifikasi Kode OTP",
+                "parameters": [
+                    {
+                        "description": "Data target dan kode OTP",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.VerifyOTPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukses memverifikasi OTP",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validasi request gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Kode OTP tidak valid",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/verify-recaptcha": {
+            "post": {
+                "description": "Memvalidasi token reCAPTCHA yang dikirim dari sisi klien sebelum memproses form sensitif.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Validasi reCAPTCHA",
+                "parameters": [
+                    {
+                        "description": "Data token dan action reCAPTCHA",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers_v1.ValidateRecaptchaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Validasi recaptcha berhasil",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Token dan action harus diisi",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Validasi recaptcha gagal",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/banners": {
+            "get": {
+                "description": "Mengambil daftar banner yang berstatus aktif dan masih berada dalam masa berlaku (valid). Mendukung limitasi jumlah data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Ambil daftar banner aktif",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Batasan jumlah banner yang dikembalikan",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data banner",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mendapatkan data banner",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/banners/process": {
+            "post": {
+                "description": "Memproses data payload banner. Jika field ID pada payload kosong, maka akan melakukan Insert (Tambah Banner). Jika field ID terisi, akan melakukan Update pada banner tersebut.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Banners"
+                ],
+                "summary": "Tambah atau Update Banner",
+                "parameters": [
+                    {
+                        "description": "Data JSON Banner",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Banner"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menambahkan atau mengupdate banner",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Gagal memproses data banner dari body request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal memproses/menyimpan banner ke database",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/categories": {
+            "get": {
+                "description": "Mengambil semua data kategori yang tersedia.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Ambil daftar kategori",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data category",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Membuat entri data kategori baru ke dalam database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Tambah kategori baru",
+                "parameters": [
+                    {
+                        "description": "Data JSON kategori baru",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Berhasil menambahkan category",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/categories/{id}": {
+            "get": {
+                "description": "Mengambil satu baris data kategori secara spesifik menggunakan parameter ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Ambil detail kategori",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID kategori",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data category",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Memodifikasi keseluruhan data kategori berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Update kategori",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID kategori",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data JSON pembaruan kategori",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengupdate category",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Menghapus data kategori dari database berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Hapus kategori",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID kategori",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus category",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/dashboard": {
+            "get": {
+                "description": "Mengambil ringkasan data statistik dan metrik utama untuk ditampilkan di halaman dashboard.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Ambil data dashboard",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data dashboard",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payment-gateways": {
+            "get": {
+                "description": "Mengambil semua data konfigurasi payment gateway yang tersedia di sistem.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment Gateways"
+                ],
+                "summary": "Ambil daftar payment gateway",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data payment gateway",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Membuat entri data konfigurasi payment gateway baru ke dalam database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment Gateways"
+                ],
+                "summary": "Tambah payment gateway baru",
+                "parameters": [
+                    {
+                        "description": "Data JSON payment gateway baru",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Berhasil menambahkan payment gateway",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payment-gateways/{id}": {
+            "get": {
+                "description": "Mengambil satu baris data konfigurasi payment gateway secara spesifik menggunakan parameter ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment Gateways"
+                ],
+                "summary": "Ambil detail payment gateway",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID Payment Gateway",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data payment gateway",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Memodifikasi keseluruhan data konfigurasi payment gateway berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment Gateways"
+                ],
+                "summary": "Update payment gateway",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID Payment Gateway",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data JSON pembaruan payment gateway",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengupdate payment gateway",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Menghapus data konfigurasi payment gateway dari database berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment Gateways"
+                ],
+                "summary": "Hapus payment gateway",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID Payment Gateway",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus payment gateway",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payment-methods": {
+            "get": {
+                "description": "Mengambil daftar metode pembayaran yang berstatus aktif. Mendukung fitur caching Redis yang bisa diatur melalui query parameter.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment Methods"
+                ],
+                "summary": "Ambil daftar metode pembayaran",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Gunakan cache (true/false)",
+                        "name": "cache",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 86400,
+                        "description": "Waktu hidup cache dalam detik",
+                        "name": "cache_ttl",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"active-payment-methods\"",
+                        "description": "Kunci referensi cache kustom",
+                        "name": "cache_key",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data payment method",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mendapatkan data payment method",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/settings": {
+            "get": {
+                "description": "Mengambil semua data konfigurasi dan pengaturan aplikasi.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Ambil daftar pengaturan",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data setting",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Membuat data konfigurasi pengaturan baru ke dalam database.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Tambah pengaturan baru",
+                "parameters": [
+                    {
+                        "description": "Data JSON pengaturan baru",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Berhasil menambahkan setting",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/settings/{id}": {
+            "put": {
+                "description": "Memodifikasi data pengaturan berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update pengaturan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID pengaturan",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data JSON pembaruan pengaturan",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengupdate setting",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Menghapus data pengaturan dari database berdasarkan ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Hapus pengaturan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID pengaturan",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil menghapus setting",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/settings/{key}": {
+            "get": {
+                "description": "Mengambil nilai konfigurasi atau pengaturan spesifik berdasarkan 'key' (kunci) pengaturannya.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Ambil detail pengaturan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Key string dari pengaturan (contoh: 'site_title')",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mendapatkan data setting",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mendapatkan data setting",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mengambil semua data pengguna dari database. (Membutuhkan hak akses admin).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Ambil daftar user",
+                "responses": {
+                    "200": {
+                        "description": "User berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Gagal mengambil user",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/password": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Memperbarui kata sandi pengguna berdasarkan token JWT yang sedang aktif.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update password user",
+                "parameters": [
+                    {
+                        "description": "Data kata sandi lama dan baru",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdatePasswordInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password berhasil diperbarui",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error validasi form atau password lama salah",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan server",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/profile": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Memperbarui data profil pengguna berdasarkan token JWT yang sedang aktif.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update profil user",
+                "parameters": [
+                    {
+                        "description": "Data profil yang ingin diubah",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateProfileInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profile berhasil diperbarui",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Error validasi form input",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan server",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mengambil satu data pengguna secara spesifik menggunakan parameter ID. (Membutuhkan hak akses admin).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Ambil detail user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID User",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User berhasil diambil",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OrderedErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controllers_v1.ValidateRecaptchaInput": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Article": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "img": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "likes": {
+                    "type": "integer"
+                },
+                "meta_description": {
+                    "type": "string"
+                },
+                "meta_img": {
+                    "type": "string"
+                },
+                "meta_keywords": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "views": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Banner": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "img": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "valid_from": {
+                    "type": "string"
+                },
+                "valid_until": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Category": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Category"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "parent": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PaymentMethod"
+                    }
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PaymentGateway": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "paymentMethods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PaymentMethod"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PaymentMethod": {
+            "type": "object",
+            "properties": {
+                "additional_fields": {
+                    "description": "could be JSON",
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/models.Category"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "expiry_seconds": {
+                    "type": "integer"
+                },
+                "fee_fixed": {
+                    "type": "number"
+                },
+                "fee_percent": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "img": {
+                    "type": "string"
+                },
+                "invoice_code": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_international": {
+                    "type": "boolean"
+                },
+                "is_ready_production": {
+                    "type": "boolean"
+                },
+                "max_amount": {
+                    "type": "number"
+                },
+                "min_amount": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "paymentGateway": {
+                    "$ref": "#/definitions/models.PaymentGateway"
+                },
+                "payment_gateway_id": {
+                    "type": "string"
+                },
+                "ppn": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ForgotPasswordInput": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "requests.Login2FARequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "temp_token"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "temp_token": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "requests.LoginInput": {
+            "type": "object",
+            "required": [
+                "credential",
+                "password"
+            ],
+            "properties": {
+                "credential": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 8
+                }
+            }
+        },
+        "requests.RegisterInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "password_confirmation",
+                "phone"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 8
+                },
+                "password_confirmation": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "referral_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ResetPasswordInput": {
+            "type": "object",
+            "required": [
+                "password",
+                "password_confirmation",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 8
+                },
+                "password_confirmation": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "requests.SendOTPRequest": {
+            "type": "object",
+            "required": [
+                "subject",
+                "target_type"
+            ],
+            "properties": {
+                "subject": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "target": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "target_type": {
+                    "type": "string",
+                    "enum": [
+                        "wa",
+                        "email"
+                    ]
+                }
+            }
+        },
+        "requests.UpdatePasswordInput": {
+            "type": "object",
+            "required": [
+                "current_password",
+                "new_password",
+                "new_password_confirmation"
+            ],
+            "properties": {
+                "current_password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 8
+                },
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 8
+                },
+                "new_password_confirmation": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateProfileInput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.Verify2FARequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "requests.VerifyEmailInput": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "requests.VerifyOTPRequest": {
+            "type": "object",
+            "required": [
+                "otp",
+                "subject",
+                "target_type"
+            ],
+            "properties": {
+                "otp": {
+                    "type": "string",
+                    "maxLength": 6,
+                    "minLength": 6
+                },
+                "subject": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "target": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "target_type": {
+                    "type": "string",
+                    "enum": [
+                        "wa",
+                        "email"
+                    ]
+                }
+            }
+        },
+        "responses.Pagination": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "integer"
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "to": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "utils.OrderedErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {},
+                "dev_message": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "string"
+                },
+                "errors": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "trace": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.OrderedSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "meta": {},
+                "pagination": {
+                    "$ref": "#/definitions/responses.Pagination"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

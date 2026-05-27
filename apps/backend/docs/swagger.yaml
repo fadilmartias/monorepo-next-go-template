@@ -1,0 +1,1945 @@
+basePath: /
+definitions:
+  controllers_v1.ValidateRecaptchaInput:
+    properties:
+      action:
+        type: string
+      token:
+        type: string
+    type: object
+  models.Article:
+    properties:
+      author:
+        type: string
+      category:
+        $ref: '#/definitions/models.Category'
+      category_id:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      img:
+        type: string
+      is_active:
+        type: boolean
+      likes:
+        type: integer
+      meta_description:
+        type: string
+      meta_img:
+        type: string
+      meta_keywords:
+        type: string
+      published_at:
+        type: string
+      slug:
+        type: string
+      tenant_id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      views:
+        type: integer
+    type: object
+  models.Banner:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      img:
+        type: string
+      is_active:
+        type: boolean
+      link:
+        type: string
+      order:
+        type: integer
+      tenant_id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      valid_from:
+        type: string
+      valid_until:
+        type: string
+    type: object
+  models.Category:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      created_at:
+        type: string
+      desc:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      order:
+        type: integer
+      parent:
+        $ref: '#/definitions/models.Category'
+      parent_id:
+        type: string
+      paymentMethods:
+        items:
+          $ref: '#/definitions/models.PaymentMethod'
+        type: array
+      slug:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.PaymentGateway:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      metadata:
+        type: string
+      name:
+        type: string
+      order:
+        type: integer
+      paymentMethods:
+        items:
+          $ref: '#/definitions/models.PaymentMethod'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  models.PaymentMethod:
+    properties:
+      additional_fields:
+        description: could be JSON
+        type: string
+      category:
+        $ref: '#/definitions/models.Category'
+      category_id:
+        type: string
+      code:
+        type: string
+      created_at:
+        type: string
+      desc:
+        type: string
+      expiry_seconds:
+        type: integer
+      fee_fixed:
+        type: number
+      fee_percent:
+        type: number
+      id:
+        type: string
+      img:
+        type: string
+      invoice_code:
+        type: string
+      is_active:
+        type: boolean
+      is_international:
+        type: boolean
+      is_ready_production:
+        type: boolean
+      max_amount:
+        type: number
+      min_amount:
+        type: number
+      name:
+        type: string
+      order:
+        type: integer
+      payment_gateway_id:
+        type: string
+      paymentGateway:
+        $ref: '#/definitions/models.PaymentGateway'
+      ppn:
+        type: number
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  requests.ForgotPasswordInput:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+    required:
+    - email
+    type: object
+  requests.Login2FARequest:
+    properties:
+      code:
+        maxLength: 255
+        type: string
+      temp_token:
+        maxLength: 255
+        type: string
+    required:
+    - code
+    - temp_token
+    type: object
+  requests.LoginInput:
+    properties:
+      credential:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 255
+        minLength: 8
+        type: string
+    required:
+    - credential
+    - password
+    type: object
+  requests.RegisterInput:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 255
+        minLength: 8
+        type: string
+      password_confirmation:
+        type: string
+      phone:
+        maxLength: 255
+        type: string
+      referral_code:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - password_confirmation
+    - phone
+    type: object
+  requests.ResetPasswordInput:
+    properties:
+      password:
+        maxLength: 255
+        minLength: 8
+        type: string
+      password_confirmation:
+        type: string
+      token:
+        maxLength: 255
+        type: string
+    required:
+    - password
+    - password_confirmation
+    - token
+    type: object
+  requests.SendOTPRequest:
+    properties:
+      subject:
+        maxLength: 255
+        type: string
+      target:
+        maxLength: 255
+        type: string
+      target_type:
+        enum:
+        - wa
+        - email
+        type: string
+    required:
+    - subject
+    - target_type
+    type: object
+  requests.UpdatePasswordInput:
+    properties:
+      current_password:
+        maxLength: 255
+        minLength: 8
+        type: string
+      new_password:
+        maxLength: 255
+        minLength: 8
+        type: string
+      new_password_confirmation:
+        type: string
+    required:
+    - current_password
+    - new_password
+    - new_password_confirmation
+    type: object
+  requests.UpdateProfileInput:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  requests.Verify2FARequest:
+    properties:
+      code:
+        maxLength: 255
+        type: string
+    required:
+    - code
+    type: object
+  requests.VerifyEmailInput:
+    properties:
+      token:
+        maxLength: 255
+        type: string
+    required:
+    - token
+    type: object
+  requests.VerifyOTPRequest:
+    properties:
+      otp:
+        maxLength: 6
+        minLength: 6
+        type: string
+      subject:
+        maxLength: 255
+        type: string
+      target:
+        maxLength: 255
+        type: string
+      target_type:
+        enum:
+        - wa
+        - email
+        type: string
+    required:
+    - otp
+    - subject
+    - target_type
+    type: object
+  responses.Pagination:
+    properties:
+      from:
+        type: integer
+      has_more:
+        type: boolean
+      page:
+        type: integer
+      page_size:
+        type: integer
+      to:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  utils.OrderedErrorResponse:
+    properties:
+      details: {}
+      dev_message:
+        type: string
+      error_code:
+        type: string
+      errors: {}
+      message:
+        type: string
+      success:
+        type: boolean
+      trace:
+        type: string
+    type: object
+  utils.OrderedSuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      meta: {}
+      pagination:
+        $ref: '#/definitions/responses.Pagination'
+      success:
+        type: boolean
+    type: object
+host: localhost:9001
+info:
+  contact: {}
+  description: Ini adalah dokumentasi API untuk backend berbasis Go Fiber.
+  title: DilZ Backend API
+  version: "1.0"
+paths:
+  /v0/{model}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar data berdasarkan nama model secara dinamis dengan
+        dukungan paginasi dan filter query params.
+      parameters:
+      - description: 'Nama Model (contoh: users, posts)'
+        in: path
+        name: model
+        required: true
+        type: string
+      - description: Gunakan cache Redis (true/false)
+        in: query
+        name: cache
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengambil data
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: Model tidak ditemukan di registry
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil daftar data model
+      tags:
+      - Generic API
+    post:
+      consumes:
+      - application/json
+      description: Menyimpan entri data baru ke database untuk model yang ditentukan.
+      parameters:
+      - description: Nama Model
+        in: path
+        name: model
+        required: true
+        type: string
+      - description: Data JSON yang akan disimpan
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Berhasil membuat data
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "404":
+          description: Model tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Buat data baru
+      tags:
+      - Generic API
+  /v0/{model}/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus (atau soft delete) data berdasarkan ID.
+      parameters:
+      - description: Nama Model
+        in: path
+        name: model
+        required: true
+        type: string
+      - description: ID data
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil menghapus data
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: Data atau model tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Hapus data
+      tags:
+      - Generic API
+    get:
+      consumes:
+      - application/json
+      description: Mengambil satu baris data berdasarkan ID atau slug secara dinamis.
+      parameters:
+      - description: Nama Model
+        in: path
+        name: model
+        required: true
+        type: string
+      - description: ID atau Slug data
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Set true jika mencari berdasarkan slug
+        in: query
+        name: slug
+        type: boolean
+      - description: Gunakan cache Redis (true/false)
+        in: query
+        name: cache
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengambil detail data
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: Model tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil detail data model
+      tags:
+      - Generic API
+    patch:
+      consumes:
+      - application/json
+      description: Melakukan update data secara parsial berdasarkan field yang dikirimkan.
+      parameters:
+      - description: Nama Model
+        in: path
+        name: model
+        required: true
+        type: string
+      - description: ID data
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data JSON parsial untuk update
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengupdate data parsial
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "404":
+          description: Data tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Update parsial data
+      tags:
+      - Generic API
+    put:
+      consumes:
+      - application/json
+      description: Melakukan update data yang ada berdasarkan ID. Menggunakan PUT
+        biasanya merepresentasikan penggantian keseluruhan baris.
+      parameters:
+      - description: Nama Model
+        in: path
+        name: model
+        required: true
+        type: string
+      - description: ID data
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data JSON untuk update
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengupdate data
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "404":
+          description: Data tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Update keseluruhan data
+      tags:
+      - Generic API
+  /v0/uploads:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'Endpoint untuk mengunggah file. Mendukung penerimaan file melalui
+        field form-data: ''image'', ''file'', atau ''tinymce''. Hanya mendukung ekstensi
+        jpg, png, webp, gif, dan svg.'
+      parameters:
+      - description: File gambar yang akan diupload
+        in: formData
+        name: image
+        type: file
+      - description: File dokumen/umum yang akan diupload
+        in: formData
+        name: file
+        type: file
+      - description: File gambar khusus dari editor TinyMCE
+        in: formData
+        name: tinymce
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengunggah file
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Gagal memproses form, field tidak ditemukan, atau tipe file
+            tidak didukung
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Kesalahan konfigurasi server atau gagal menyimpan file
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Upload file (Gambar, Dokumen, atau TinyMCE)
+      tags:
+      - Upload
+  /v1/activity-logs/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil satu baris data riwayat aktivitas (Activity Log) berdasarkan
+        ID.
+      parameters:
+      - description: ID dari Activity Log
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data activity log
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: Activity Log tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Terjadi kesalahan pada server
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil detail Activity Log
+      tags:
+      - Activity Log
+  /v1/articles:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar artikel yang sudah dipublikasikan (published)
+        untuk blog CodeXtory. Mendukung limitasi jumlah data menggunakan query parameter.
+      parameters:
+      - default: 10
+        description: Batasan jumlah artikel yang dikembalikan
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data article
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal mendapatkan data article
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil daftar artikel publik
+      tags:
+      - Articles
+  /v1/articles/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil satu data artikel yang dipublikasikan berdasarkan slug-nya.
+        Terdapat opsi untuk memuat artikel terkait (related articles).
+      parameters:
+      - description: Slug dari artikel
+        in: path
+        name: slug
+        required: true
+        type: string
+      - default: false
+        description: Set true untuk menyertakan artikel terkait
+        in: query
+        name: related
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data article
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: Artikel tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil detail artikel
+      tags:
+      - Articles
+  /v1/articles/popular:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar artikel yang paling banyak dibaca atau berstatus
+        populer. Bisa mengecualikan artikel tertentu menggunakan parameter 'except'.
+      parameters:
+      - default: 10
+        description: Batasan jumlah artikel yang dikembalikan
+        in: query
+        name: limit
+        type: integer
+      - description: ID atau slug artikel yang ingin dikecualikan dari hasil
+        in: query
+        name: except
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data article
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: Artikel tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil artikel populer
+      tags:
+      - Articles
+  /v1/articles/process:
+    post:
+      consumes:
+      - application/json
+      description: Memproses data payload artikel. Jika field ID pada payload kosong,
+        maka akan melakukan Insert (Tambah Artikel). Jika field ID terisi, akan melakukan
+        Update pada artikel tersebut.
+      parameters:
+      - description: Data JSON Artikel
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.Article'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil menambahkan atau mengupdate artikel
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Gagal memproses data artikel dari body request
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Gagal memproses/menyimpan artikel ke database
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Tambah atau Update Artikel
+      tags:
+      - Articles
+  /v1/auth/disable-2fa:
+    post:
+      consumes:
+      - application/json
+      description: Mematikan fitur Two-Factor Authentication untuk akun pengguna yang
+        sedang login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses menghapus 2FA
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal menghapus 2FA
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Nonaktifkan 2FA
+      tags:
+      - Two-Factor Auth
+  /v1/auth/discord/callback:
+    get:
+      description: Menangani respons balikan dari Discord.
+      parameters:
+      - description: Kode otorisasi dari Discord
+        in: query
+        name: code
+        required: true
+        type: string
+      responses: {}
+      summary: Callback Discord OAuth
+      tags:
+      - OAuth
+  /v1/auth/discord/redirect:
+    get:
+      description: Mengarahkan pengguna ke halaman otorisasi OAuth Discord.
+      responses: {}
+      summary: Login Discord (Redirect)
+      tags:
+      - OAuth
+  /v1/auth/facebook/callback:
+    get:
+      description: Menangani respons balikan dari Facebook.
+      parameters:
+      - description: Kode otorisasi dari Facebook
+        in: query
+        name: code
+        required: true
+        type: string
+      responses: {}
+      summary: Callback Facebook OAuth
+      tags:
+      - OAuth
+  /v1/auth/facebook/redirect:
+    get:
+      description: Mengarahkan pengguna ke halaman otorisasi OAuth Facebook.
+      responses: {}
+      summary: Login Facebook (Redirect)
+      tags:
+      - OAuth
+  /v1/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Meminta link token reset password dikirimkan ke email yang terdaftar.
+      parameters:
+      - description: Email pengguna
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ForgotPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token reset password berhasil dikirim
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Gagal memproses forgot password
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Lupa Password
+      tags:
+      - Authentication
+  /v1/auth/google/callback:
+    get:
+      description: Menangani respons balikan (code) dari Google setelah login sukses.
+      parameters:
+      - description: Kode otorisasi dari Google
+        in: query
+        name: code
+        required: true
+        type: string
+      responses: {}
+      summary: Callback Google OAuth
+      tags:
+      - OAuth
+  /v1/auth/google/one-tap:
+    post:
+      consumes:
+      - application/json
+      description: Memvalidasi kredensial Google One Tap JWT yang dikirim dari klien.
+      parameters:
+      - description: Format JSON dengan property 'credential'
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil login atau membutuhkan 2FA
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Error handle user google
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Google One Tap Login
+      tags:
+      - OAuth
+  /v1/auth/google/redirect:
+    get:
+      description: Mengarahkan (redirect) pengguna ke halaman otorisasi OAuth Google.
+      responses: {}
+      summary: Login Google (Redirect)
+      tags:
+      - OAuth
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Memproses kredensial (email/username) dan password. Akan mengatur
+        cookie `access_token` dan `refresh_token` jika berhasil. Mengembalikan flag
+        khusus jika akun mengaktifkan 2FA.
+      parameters:
+      - description: Kredensial login
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login berhasil atau membutuhkan 2FA
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "401":
+          description: Email atau password salah
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Login User
+      tags:
+      - Authentication
+  /v1/auth/login-2fa:
+    post:
+      consumes:
+      - application/json
+      description: Menyelesaikan proses login dengan menggunakan `temp_token` dari
+        tahap login pertama dan kode otentikator.
+      parameters:
+      - description: Temp token dan kode 2FA
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.Login2FARequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login berhasil
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "401":
+          description: Kode 2FA salah atau token kedaluwarsa
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Login via 2FA
+      tags:
+      - Authentication
+  /v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Mengakhiri sesi pengguna dengan menghapus token otentikasi dari
+        cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged out successfully
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "401":
+          description: Invalid token
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Failed to logout user
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout User
+      tags:
+      - Authentication
+  /v1/auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil data profil pengguna berdasarkan token otentikasi yang
+        aktif (via Cookie/Bearer).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "401":
+          description: Invalid token
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "404":
+          description: User tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Dapatkan Profil User (Me)
+      tags:
+      - Authentication
+  /v1/auth/refresh-access-token:
+    post:
+      consumes:
+      - application/json
+      description: Menghasilkan `access_token` yang baru menggunakan `refresh_token`
+        yang valid dari Cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token refreshed successfully
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Token tidak ditemukan atau tidak valid
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Refresh Token
+      tags:
+      - Authentication
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Mendaftarkan pengguna baru ke dalam sistem.
+      parameters:
+      - description: Data pendaftaran pengguna
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Bad Request (Validasi gagal)
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Registrasi Akun Baru
+      tags:
+      - Authentication
+  /v1/auth/register-2fa:
+    post:
+      consumes:
+      - application/json
+      description: Meng-generate secret TOTP dan URL QR Code untuk dipindai oleh Google
+        Authenticator / Authy.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil generate TOTP secret
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal menyimpan kunci rahasia
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Setup 2FA (TOTP)
+      tags:
+      - Two-Factor Auth
+  /v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Mengatur ulang kata sandi dengan memberikan token yang valid (didapat
+        dari email) beserta kata sandi baru.
+      parameters:
+      - description: Token dan password baru
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset berhasil
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Gagal mereset password atau token tidak valid
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Reset Password
+      tags:
+      - Authentication
+  /v1/auth/send-email-verification:
+    post:
+      consumes:
+      - application/json
+      description: Mengirimkan kembali tautan verifikasi alamat email ke pengguna
+        yang sedang login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email verifikasi berhasil dikirim
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "401":
+          description: Invalid token
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Gagal mengirim email verifikasi
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Kirim Ulang Email Verifikasi
+      tags:
+      - Authentication
+  /v1/auth/send-otp:
+    post:
+      consumes:
+      - application/json
+      description: Mengirimkan kode OTP ke email atau WhatsApp. Bisa digunakan oleh
+        pengguna login maupun tamu (guest).
+      parameters:
+      - description: Data target tujuan pengiriman OTP
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.SendOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses mengirim OTP
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Gagal mengirim OTP
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Kirim Kode OTP
+      tags:
+      - OTP
+  /v1/auth/steam/callback:
+    get:
+      description: Menangani respons balikan (query params) dari Steam.
+      responses: {}
+      summary: Callback Steam OpenID
+      tags:
+      - OAuth
+  /v1/auth/steam/redirect:
+    get:
+      description: Mengarahkan pengguna ke halaman OpenID Steam.
+      responses: {}
+      summary: Login Steam (Redirect)
+      tags:
+      - OAuth
+  /v1/auth/twitch/callback:
+    get:
+      description: Menangani respons balikan dari Twitch.
+      parameters:
+      - description: Kode otorisasi dari Twitch
+        in: query
+        name: code
+        required: true
+        type: string
+      responses: {}
+      summary: Callback Twitch OAuth
+      tags:
+      - OAuth
+  /v1/auth/twitch/redirect:
+    get:
+      description: Mengarahkan pengguna ke halaman otorisasi OAuth Twitch.
+      responses: {}
+      summary: Login Twitch (Redirect)
+      tags:
+      - OAuth
+  /v1/auth/verify-2fa:
+    post:
+      consumes:
+      - application/json
+      description: Mengaktifkan 2FA di akun dengan memvalidasi kode PIN pertama yang
+        dimasukkan pengguna.
+      parameters:
+      - description: Kode OTP dari Authenticator
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.Verify2FARequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses verifikasi 2FA
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Gagal parsing request body
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "404":
+          description: User tidak ditemukan atau token tidak valid
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Verifikasi Aktivasi 2FA
+      tags:
+      - Two-Factor Auth
+  /v1/auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      description: Memverifikasi bahwa email milik pengguna menggunakan token rahasia
+        yang dikirimkan via email.
+      parameters:
+      - description: Token verifikasi email
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.VerifyEmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email verified successfully
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "401":
+          description: Token tidak valid
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Verifikasi Email
+      tags:
+      - Authentication
+  /v1/auth/verify-otp:
+    post:
+      consumes:
+      - application/json
+      description: Memverifikasi input kode OTP yang diterima pengguna.
+      parameters:
+      - description: Data target dan kode OTP
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sukses memverifikasi OTP
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Validasi request gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "404":
+          description: Kode OTP tidak valid
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Verifikasi Kode OTP
+      tags:
+      - OTP
+  /v1/auth/verify-recaptcha:
+    post:
+      consumes:
+      - application/json
+      description: Memvalidasi token reCAPTCHA yang dikirim dari sisi klien sebelum
+        memproses form sensitif.
+      parameters:
+      - description: Data token dan action reCAPTCHA
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/controllers_v1.ValidateRecaptchaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Validasi recaptcha berhasil
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Token dan action harus diisi
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "401":
+          description: Validasi recaptcha gagal
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Validasi reCAPTCHA
+      tags:
+      - Authentication
+  /v1/banners:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar banner yang berstatus aktif dan masih berada dalam
+        masa berlaku (valid). Mendukung limitasi jumlah data.
+      parameters:
+      - default: 10
+        description: Batasan jumlah banner yang dikembalikan
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data banner
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal mendapatkan data banner
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil daftar banner aktif
+      tags:
+      - Banners
+  /v1/banners/process:
+    post:
+      consumes:
+      - application/json
+      description: Memproses data payload banner. Jika field ID pada payload kosong,
+        maka akan melakukan Insert (Tambah Banner). Jika field ID terisi, akan melakukan
+        Update pada banner tersebut.
+      parameters:
+      - description: Data JSON Banner
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.Banner'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil menambahkan atau mengupdate banner
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "400":
+          description: Gagal memproses data banner dari body request
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Gagal memproses/menyimpan banner ke database
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Tambah atau Update Banner
+      tags:
+      - Banners
+  /v1/categories:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil semua data kategori yang tersedia.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data category
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Ambil daftar kategori
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Membuat entri data kategori baru ke dalam database.
+      parameters:
+      - description: Data JSON kategori baru
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Berhasil menambahkan category
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Tambah kategori baru
+      tags:
+      - Categories
+  /v1/categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus data kategori dari database berdasarkan ID.
+      parameters:
+      - description: ID kategori
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil menghapus category
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Hapus kategori
+      tags:
+      - Categories
+    get:
+      consumes:
+      - application/json
+      description: Mengambil satu baris data kategori secara spesifik menggunakan
+        parameter ID.
+      parameters:
+      - description: ID kategori
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data category
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Ambil detail kategori
+      tags:
+      - Categories
+    put:
+      consumes:
+      - application/json
+      description: Memodifikasi keseluruhan data kategori berdasarkan ID.
+      parameters:
+      - description: ID kategori
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data JSON pembaruan kategori
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengupdate category
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Update kategori
+      tags:
+      - Categories
+  /v1/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil ringkasan data statistik dan metrik utama untuk ditampilkan
+        di halaman dashboard.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data dashboard
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Ambil data dashboard
+      tags:
+      - Dashboard
+  /v1/payment-gateways:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil semua data konfigurasi payment gateway yang tersedia
+        di sistem.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data payment gateway
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Ambil daftar payment gateway
+      tags:
+      - Payment Gateways
+    post:
+      consumes:
+      - application/json
+      description: Membuat entri data konfigurasi payment gateway baru ke dalam database.
+      parameters:
+      - description: Data JSON payment gateway baru
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Berhasil menambahkan payment gateway
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Tambah payment gateway baru
+      tags:
+      - Payment Gateways
+  /v1/payment-gateways/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus data konfigurasi payment gateway dari database berdasarkan
+        ID.
+      parameters:
+      - description: ID Payment Gateway
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil menghapus payment gateway
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Hapus payment gateway
+      tags:
+      - Payment Gateways
+    get:
+      consumes:
+      - application/json
+      description: Mengambil satu baris data konfigurasi payment gateway secara spesifik
+        menggunakan parameter ID.
+      parameters:
+      - description: ID Payment Gateway
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data payment gateway
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Ambil detail payment gateway
+      tags:
+      - Payment Gateways
+    put:
+      consumes:
+      - application/json
+      description: Memodifikasi keseluruhan data konfigurasi payment gateway berdasarkan
+        ID.
+      parameters:
+      - description: ID Payment Gateway
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data JSON pembaruan payment gateway
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengupdate payment gateway
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Update payment gateway
+      tags:
+      - Payment Gateways
+  /v1/payment-methods:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil daftar metode pembayaran yang berstatus aktif. Mendukung
+        fitur caching Redis yang bisa diatur melalui query parameter.
+      parameters:
+      - default: false
+        description: Gunakan cache (true/false)
+        in: query
+        name: cache
+        type: boolean
+      - default: 86400
+        description: Waktu hidup cache dalam detik
+        in: query
+        name: cache_ttl
+        type: integer
+      - default: '"active-payment-methods"'
+        description: Kunci referensi cache kustom
+        in: query
+        name: cache_key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data payment method
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal mendapatkan data payment method
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil daftar metode pembayaran
+      tags:
+      - Payment Methods
+  /v1/settings:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil semua data konfigurasi dan pengaturan aplikasi.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data setting
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Ambil daftar pengaturan
+      tags:
+      - Settings
+    post:
+      consumes:
+      - application/json
+      description: Membuat data konfigurasi pengaturan baru ke dalam database.
+      parameters:
+      - description: Data JSON pengaturan baru
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Berhasil menambahkan setting
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Tambah pengaturan baru
+      tags:
+      - Settings
+  /v1/settings/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Menghapus data pengaturan dari database berdasarkan ID.
+      parameters:
+      - description: ID pengaturan
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil menghapus setting
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Hapus pengaturan
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: Memodifikasi data pengaturan berdasarkan ID.
+      parameters:
+      - description: ID pengaturan
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Data JSON pembaruan pengaturan
+        in: body
+        name: payload
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mengupdate setting
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+      summary: Update pengaturan
+      tags:
+      - Settings
+  /v1/settings/{key}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil nilai konfigurasi atau pengaturan spesifik berdasarkan
+        'key' (kunci) pengaturannya.
+      parameters:
+      - description: 'Key string dari pengaturan (contoh: ''site_title'')'
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Berhasil mendapatkan data setting
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal mendapatkan data setting
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      summary: Ambil detail pengaturan
+      tags:
+      - Settings
+  /v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil semua data pengguna dari database. (Membutuhkan hak akses
+        admin).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User berhasil diambil
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "500":
+          description: Gagal mengambil user
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Ambil daftar user
+      tags:
+      - Users
+  /v1/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Mengambil satu data pengguna secara spesifik menggunakan parameter
+        ID. (Membutuhkan hak akses admin).
+      parameters:
+      - description: ID User
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User berhasil diambil
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "404":
+          description: User tidak ditemukan
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Ambil detail user
+      tags:
+      - Users
+  /v1/users/password:
+    patch:
+      consumes:
+      - application/json
+      description: Memperbarui kata sandi pengguna berdasarkan token JWT yang sedang
+        aktif.
+      parameters:
+      - description: Data kata sandi lama dan baru
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password berhasil diperbarui
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "401":
+          description: Error validasi form atau password lama salah
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Terjadi kesalahan server
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update password user
+      tags:
+      - Users
+  /v1/users/profile:
+    patch:
+      consumes:
+      - application/json
+      description: Memperbarui data profil pengguna berdasarkan token JWT yang sedang
+        aktif.
+      parameters:
+      - description: Data profil yang ingin diubah
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile berhasil diperbarui
+          schema:
+            $ref: '#/definitions/utils.OrderedSuccessResponse'
+        "401":
+          description: Error validasi form input
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+        "500":
+          description: Terjadi kesalahan server
+          schema:
+            $ref: '#/definitions/utils.OrderedErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update profil user
+      tags:
+      - Users
+swagger: "2.0"

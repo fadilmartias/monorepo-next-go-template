@@ -9,7 +9,7 @@ import (
 )
 
 func RegisterWebsocketRoutes(app *fiber.App) {
-	// Rute websocket memerlukan middleware khusus
+
 	app.Use("/ws", func(c fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
@@ -21,8 +21,8 @@ func RegisterWebsocketRoutes(app *fiber.App) {
 	app.Get("/ws/payment/:order_id", websocket.New(func(c *websocket.Conn) {
 		fmt.Println("New websocket client connected: ", c.Params("order_id"))
 		orderID := c.Params("order_id")
-		utils.WebsocketAddClient(orderID, c)
-		defer utils.WebsocketRemoveClient(orderID, c)
+		utils.WebsocketAddClient("payment:"+orderID, c)
+		defer utils.WebsocketRemoveClient("payment:"+orderID, c)
 
 		for {
 			// Kalau client kirim pesan, bisa dibaca di sini (opsional)
@@ -32,9 +32,10 @@ func RegisterWebsocketRoutes(app *fiber.App) {
 		}
 	}))
 
-	app.Get("/ws/leaderboard/global", websocket.New(func(c *websocket.Conn) {
-		utils.WebsocketAddClient("leaderboard-global", c)
-		defer utils.WebsocketRemoveClient("leaderboard-global", c)
+	app.Get("/ws/chat/:room", websocket.New(func(c *websocket.Conn) {
+		room := c.Params("room")
+		utils.WebsocketAddClient("chat:"+room, c)
+		defer utils.WebsocketRemoveClient("chat:"+room, c)
 	}))
 
 }

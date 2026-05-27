@@ -9,7 +9,6 @@ import (
 )
 
 type DashboardController struct {
-	BaseController
 	DB    *gorm.DB
 	Redis *redis.Client
 }
@@ -18,6 +17,14 @@ func NewDashboardController(db *gorm.DB, redis *redis.Client) *DashboardControll
 	return &DashboardController{DB: db, Redis: redis}
 }
 
+// Index mengambil data ringkasan untuk dashboard
+// @Summary Ambil data dashboard
+// @Description Mengambil ringkasan data statistik dan metrik utama untuk ditampilkan di halaman dashboard.
+// @Tags Dashboard
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mendapatkan data dashboard"
+// @Router /v1/dashboard [get]
 func (ctrl *DashboardController) Index(c fiber.Ctx) error {
 
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{

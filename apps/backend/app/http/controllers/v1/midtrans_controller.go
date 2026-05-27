@@ -26,6 +26,15 @@ package controllers_v1
 // 	return &MidtransController{DB: db, Redis: redis, MidtransService: midtransService}
 // }
 
+// // RenderQrGopay mengambil stream raw binary gambar QR Code GoPay
+// // @Summary Render QR Code GoPay
+// // @Description Mengambil dan me-render langsung gambar QR Code GoPay dari Midtrans berdasarkan ID pembayaran.
+// // @Tags Midtrans
+// // @Produce image/png
+// // @Param id path string true "ID Transaksi / Order ID"
+// // @Success 200 {file} file "Gambar QR Code dalam format PNG"
+// // @Failure 500 {object} utils.OrderedErrorResponse "Gagal request ke Midtrans"
+// // @Router /v1/midtrans/qr-gopay/{id}/qr-code [get]
 // func (ctrl *MidtransController) RenderQrGopay(c fiber.Ctx) error {
 // 	id := c.Params("id")
 // 	authHeader := utils.MidtransBasicAuth()
@@ -60,6 +69,14 @@ package controllers_v1
 // 	return c.SendStream(resp.RawBody())
 // }
 
+// // Balance mengambil informasi saldo Midtrans
+// // @Summary Ambil saldo Midtrans
+// // @Description Mengambil informasi total saldo (balance) yang tersedia di akun Midtrans.
+// // @Tags Midtrans
+// // @Produce json
+// // @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mendapatkan data balance Midtrans"
+// // @Failure 500 {object} utils.OrderedErrorResponse "Gagal request ke Midtrans"
+// // @Router /v1/midtrans/balance [get]
 // func (ctrl *MidtransController) Balance(c fiber.Ctx) error {
 // 	balance, err := ctrl.MidtransService.GetBalance()
 // 	if err != nil {
@@ -74,6 +91,18 @@ package controllers_v1
 // 	})
 // }
 
+// // RefundTransaction memproses pengembalian dana transaksi
+// // @Summary Refund Transaksi Midtrans
+// // @Description Memproses pengembalian dana (refund) untuk transaksi yang telah berhasil menggunakan Reference ID.
+// // @Tags Midtrans
+// // @Accept json
+// // @Produce json
+// // @Param reference_id path string true "Reference ID transaksi yang akan direfund"
+// // @Param payload body map[string]interface{} true "Data refund berisi property 'amount' (int) dan 'reason' (string)"
+// // @Success 200 {object} utils.OrderedSuccessResponse "Berhasil refund transaksi Midtrans"
+// // @Failure 400 {object} utils.OrderedErrorResponse "Invalid request body"
+// // @Failure 500 {object} utils.OrderedErrorResponse "Gagal refund transaksi Midtrans"
+// // @Router /v1/midtrans/refund/{reference_id} [post]
 // func (ctrl *MidtransController) RefundTransaction(c fiber.Ctx) error {
 // 	reference_id := c.Params("reference_id")
 // 	var input struct {
@@ -101,6 +130,17 @@ package controllers_v1
 // 	})
 // }
 
+// // Webhook menangani notifikasi otomatis dari Midtrans
+// // @Summary Midtrans Webhook Handler
+// // @Description Menerima dan memproses payload notifikasi status pembayaran dari server Midtrans.
+// // @Tags Midtrans
+// // @Accept json
+// // @Produce json
+// // @Param payload body requests.MidtransWebhookRequestAttributes true "Data payload notifikasi transaksi dari Midtrans"
+// // @Success 200 {object} utils.OrderedSuccessResponse "Berhasil memproses webhook dan update status transaksi"
+// // @Failure 400 {object} utils.OrderedErrorResponse "Gagal parsing payload webhook"
+// // @Failure 500 {object} utils.OrderedErrorResponse "Gagal memproses dan menyimpan perubahan status transaksi"
+// // @Router /v1/midtrans/webhook [post]
 // func (ctrl *MidtransController) Webhook(c fiber.Ctx) error {
 // 	userData := c.Value("user")
 // 	role := ""

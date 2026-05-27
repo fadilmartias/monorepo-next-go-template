@@ -26,6 +26,17 @@ func NewGenericController(db *gorm.DB, redis *redis.Client) *GenericController {
 }
 
 // Index menangani GET /:model
+// @Summary Ambil daftar data model
+// @Description Mengambil daftar data berdasarkan nama model secara dinamis dengan dukungan paginasi dan filter query params.
+// @Tags Generic API
+// @Accept json
+// @Produce json
+// @Param model path string true "Nama Model (contoh: users, posts)"
+// @Param cache query bool false "Gunakan cache Redis (true/false)"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mengambil data"
+// @Failure 404 {object} utils.OrderedErrorResponse "Model tidak ditemukan di registry"
+// @Failure 500 {object} utils.OrderedErrorResponse "Internal Server Error"
+// @Router /v0/{model} [get]
 func (ctrl *GenericController) Index(c fiber.Ctx) error {
 	modelName := c.Params("model")
 	modelInfo, err := registry.GetModel(modelName)
@@ -74,6 +85,19 @@ func (ctrl *GenericController) Index(c fiber.Ctx) error {
 }
 
 // Show menangani GET /:model/:id
+// @Summary Ambil detail data model
+// @Description Mengambil satu baris data berdasarkan ID atau slug secara dinamis.
+// @Tags Generic API
+// @Accept json
+// @Produce json
+// @Param model path string true "Nama Model"
+// @Param id path string true "ID atau Slug data"
+// @Param slug query bool false "Set true jika mencari berdasarkan slug"
+// @Param cache query bool false "Gunakan cache Redis (true/false)"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mengambil detail data"
+// @Failure 404 {object} utils.OrderedErrorResponse "Model tidak ditemukan"
+// @Failure 500 {object} utils.OrderedErrorResponse "Internal Server Error"
+// @Router /v0/{model}/{id} [get]
 func (ctrl *GenericController) Show(c fiber.Ctx) error {
 	modelName := c.Params("model")
 	id := c.Params("id")
@@ -135,6 +159,19 @@ func (ctrl *GenericController) Show(c fiber.Ctx) error {
 	}
 }
 
+// Store menangani POST /:model
+// @Summary Buat data baru
+// @Description Menyimpan entri data baru ke database untuk model yang ditentukan.
+// @Tags Generic API
+// @Accept json
+// @Produce json
+// @Param model path string true "Nama Model"
+// @Param payload body map[string]interface{} true "Data JSON yang akan disimpan"
+// @Success 201 {object} utils.OrderedSuccessResponse "Berhasil membuat data"
+// @Failure 400 {object} utils.OrderedErrorResponse "Invalid request body"
+// @Failure 404 {object} utils.OrderedErrorResponse "Model tidak ditemukan"
+// @Failure 500 {object} utils.OrderedErrorResponse "Internal Server Error"
+// @Router /v0/{model} [post]
 func (ctrl *GenericController) Store(c fiber.Ctx) error {
 	// 1. Dapatkan info model dari registry
 	modelName := c.Params("model")
@@ -144,7 +181,6 @@ func (ctrl *GenericController) Store(c fiber.Ctx) error {
 	}
 
 	// 2. Buat instance baru dari model menggunakan reflection
-	// `newInstance` sekarang adalah pointer ke struct kosong, misal: &models.User{}
 	newInstance := reflect.New(reflect.TypeOf(modelInfo.Instance).Elem()).Interface()
 
 	// 3. Parse request body JSON ke dalam instance baru tersebut
@@ -152,13 +188,7 @@ func (ctrl *GenericController) Store(c fiber.Ctx) error {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{Code: http.StatusBadRequest, Message: "Invalid request body"})
 	}
 
-	// TODO: Implementasikan validasi data di sini menggunakan library seperti `go-playground/validator`
-
-	// Placeholder untuk logika file upload
-	// utils.HandleFileUpload(c, modelName)
-
-	// 4. Set ID jika belum ada (sesuai logika JS Anda)
-	// Kita perlu reflection lagi untuk mengakses dan set field 'Id'
+	// 4. Set ID jika belum ada
 	val := reflect.ValueOf(newInstance).Elem()
 	idField := val.FieldByName("Id")
 	if idField.IsValid() && idField.Kind() == reflect.String && idField.String() == "" {
@@ -179,6 +209,19 @@ func (ctrl *GenericController) Store(c fiber.Ctx) error {
 }
 
 // Update menangani PUT /:model/:id
+// @Summary Update keseluruhan data
+// @Description Melakukan update data yang ada berdasarkan ID. Menggunakan PUT biasanya merepresentasikan penggantian keseluruhan baris.
+// @Tags Generic API
+// @Accept json
+// @Produce json
+// @Param model path string true "Nama Model"
+// @Param id path string true "ID data"
+// @Param payload body map[string]interface{} true "Data JSON untuk update"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mengupdate data"
+// @Failure 400 {object} utils.OrderedErrorResponse "Invalid request body"
+// @Failure 404 {object} utils.OrderedErrorResponse "Data tidak ditemukan"
+// @Failure 500 {object} utils.OrderedErrorResponse "Internal Server Error"
+// @Router /v0/{model}/{id} [put]
 func (ctrl *GenericController) Update(c fiber.Ctx) error {
 	// 1. Dapatkan info model dan parameter
 	modelName := c.Params("model")
@@ -195,8 +238,6 @@ func (ctrl *GenericController) Update(c fiber.Ctx) error {
 	}
 
 	// 3. Lakukan update di database
-	// GORM secara otomatis hanya akan mengupdate field yang tidak "zero-value" dari `updateData`
-	// Ini sangat efisien dan aman.
 	result := ctrl.DB.Model(modelInfo.Instance).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{Code: http.StatusInternalServerError, Message: result.Error.Error()})
@@ -210,11 +251,24 @@ func (ctrl *GenericController) Update(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Code:    http.StatusOK,
 		Message: "Data updated successfully",
-		// Mengembalikan jumlah baris yang diupdate, sesuai perilaku GORM
-		Data: fiber.Map{"rows_affected": result.RowsAffected},
+		Data:    fiber.Map{"rows_affected": result.RowsAffected},
 	})
 }
 
+// Patch menangani PATCH /:model/:id
+// @Summary Update parsial data
+// @Description Melakukan update data secara parsial berdasarkan field yang dikirimkan.
+// @Tags Generic API
+// @Accept json
+// @Produce json
+// @Param model path string true "Nama Model"
+// @Param id path string true "ID data"
+// @Param payload body map[string]interface{} true "Data JSON parsial untuk update"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mengupdate data parsial"
+// @Failure 400 {object} utils.OrderedErrorResponse "Invalid request body"
+// @Failure 404 {object} utils.OrderedErrorResponse "Data tidak ditemukan"
+// @Failure 500 {object} utils.OrderedErrorResponse "Internal Server Error"
+// @Router /v0/{model}/{id} [patch]
 func (ctrl *GenericController) Patch(c fiber.Ctx) error {
 	modelName := c.Params("model")
 	id := c.Params("id")
@@ -243,12 +297,22 @@ func (ctrl *GenericController) Patch(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Code:    http.StatusOK,
 		Message: "Data updated successfully",
-		// Mengembalikan jumlah baris yang diupdate, sesuai perilaku GORM
-		Data: fiber.Map{"rows_affected": result.RowsAffected},
+		Data:    fiber.Map{"rows_affected": result.RowsAffected},
 	})
 }
 
 // Destroy menangani DELETE /:model/:id
+// @Summary Hapus data
+// @Description Menghapus (atau soft delete) data berdasarkan ID.
+// @Tags Generic API
+// @Accept json
+// @Produce json
+// @Param model path string true "Nama Model"
+// @Param id path string true "ID data"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil menghapus data"
+// @Failure 404 {object} utils.OrderedErrorResponse "Data atau model tidak ditemukan"
+// @Failure 500 {object} utils.OrderedErrorResponse "Internal Server Error"
+// @Router /v0/{model}/{id} [delete]
 func (ctrl *GenericController) Destroy(c fiber.Ctx) error {
 	// 1. Dapatkan info model dan parameter
 	modelName := c.Params("model")
@@ -259,7 +323,6 @@ func (ctrl *GenericController) Destroy(c fiber.Ctx) error {
 	}
 
 	// 2. Hapus data dari database
-	// GORM akan melakukan soft delete jika model memiliki field `DeletedAt`
 	result := ctrl.DB.Where("id = ?", id).Delete(modelInfo.Instance)
 	if result.Error != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{Code: http.StatusInternalServerError, Message: result.Error.Error()})
@@ -275,5 +338,3 @@ func (ctrl *GenericController) Destroy(c fiber.Ctx) error {
 		Message: "Data deleted successfully",
 	})
 }
-
-// fiber:context-methods migrated

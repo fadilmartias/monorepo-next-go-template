@@ -1,9 +1,7 @@
 package bootstrap
 
 import (
-	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -109,17 +107,17 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 	}
 	redis := redisClient
 
-	// Subscribe di startup
-	pubSub := redis.Subscribe(context.Background(), "leaderboard-global")
-	go func() {
-		defer pubSub.Close()
-		for msg := range pubSub.Channel() {
-			fmt.Println("Dapet update leaderboard:", msg.Payload)
+	// // Subscribe di startup
+	// pubSub := redis.Subscribe(context.Background(), "leaderboard-global")
+	// go func() {
+	// 	defer pubSub.Close()
+	// 	for msg := range pubSub.Channel() {
+	// 		fmt.Println("Dapet update leaderboard:", msg.Payload)
 
-			// Broadcast ke websocket clients
-			utils.WebsocketBroadcast("leaderboard-global", msg.Payload)
-		}
-	}()
+	// 		// Broadcast ke websocket clients
+	// 		utils.WebsocketBroadcast("leaderboard-global", msg.Payload)
+	// 	}
+	// }()
 
 	// Use middleware
 	app.Use(recover.New(recover.Config{

@@ -9,7 +9,6 @@ import (
 )
 
 type PaymentGatewayController struct {
-	BaseController
 	DB    *gorm.DB
 	Redis *redis.Client
 }
@@ -18,6 +17,14 @@ func NewPaymentGatewayController(db *gorm.DB, redis *redis.Client) *PaymentGatew
 	return &PaymentGatewayController{DB: db, Redis: redis}
 }
 
+// Index mengambil daftar payment gateway
+// @Summary Ambil daftar payment gateway
+// @Description Mengambil semua data konfigurasi payment gateway yang tersedia di sistem.
+// @Tags Payment Gateways
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mendapatkan data payment gateway"
+// @Router /v1/payment-gateways [get]
 func (ctrl *PaymentGatewayController) Index(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil mendapatkan data payment gateway",
@@ -25,6 +32,15 @@ func (ctrl *PaymentGatewayController) Index(c fiber.Ctx) error {
 	})
 }
 
+// Show mengambil detail data payment gateway berdasarkan ID
+// @Summary Ambil detail payment gateway
+// @Description Mengambil satu baris data konfigurasi payment gateway secara spesifik menggunakan parameter ID.
+// @Tags Payment Gateways
+// @Accept json
+// @Produce json
+// @Param id path string true "ID Payment Gateway"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mendapatkan data payment gateway"
+// @Router /v1/payment-gateways/{id} [get]
 func (ctrl *PaymentGatewayController) Show(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil mendapatkan data payment gateway",
@@ -32,6 +48,15 @@ func (ctrl *PaymentGatewayController) Show(c fiber.Ctx) error {
 	})
 }
 
+// Store menambahkan data payment gateway baru
+// @Summary Tambah payment gateway baru
+// @Description Membuat entri data konfigurasi payment gateway baru ke dalam database.
+// @Tags Payment Gateways
+// @Accept json
+// @Produce json
+// @Param payload body map[string]interface{} true "Data JSON payment gateway baru"
+// @Success 201 {object} utils.OrderedSuccessResponse "Berhasil menambahkan payment gateway"
+// @Router /v1/payment-gateways [post]
 func (ctrl *PaymentGatewayController) Store(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil menambahkan payment gateway",
@@ -39,6 +64,16 @@ func (ctrl *PaymentGatewayController) Store(c fiber.Ctx) error {
 	})
 }
 
+// Update memodifikasi data payment gateway yang sudah ada
+// @Summary Update payment gateway
+// @Description Memodifikasi keseluruhan data konfigurasi payment gateway berdasarkan ID.
+// @Tags Payment Gateways
+// @Accept json
+// @Produce json
+// @Param id path string true "ID Payment Gateway"
+// @Param payload body map[string]interface{} true "Data JSON pembaruan payment gateway"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mengupdate payment gateway"
+// @Router /v1/payment-gateways/{id} [put]
 func (ctrl *PaymentGatewayController) Update(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil mengupdate payment gateway",
@@ -46,6 +81,15 @@ func (ctrl *PaymentGatewayController) Update(c fiber.Ctx) error {
 	})
 }
 
+// Destroy menghapus data payment gateway
+// @Summary Hapus payment gateway
+// @Description Menghapus data konfigurasi payment gateway dari database berdasarkan ID.
+// @Tags Payment Gateways
+// @Accept json
+// @Produce json
+// @Param id path string true "ID Payment Gateway"
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil menghapus payment gateway"
+// @Router /v1/payment-gateways/{id} [delete]
 func (ctrl *PaymentGatewayController) Destroy(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil menghapus payment gateway",

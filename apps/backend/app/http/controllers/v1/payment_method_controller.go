@@ -8,7 +8,6 @@ import (
 )
 
 type PaymentMethodController struct {
-	BaseController
 	PaymentMethodService *services.PaymentMethodService
 }
 
@@ -37,6 +36,18 @@ type PaymentMethodDTO struct {
 	CategoryName      string  `json:"category_name"`
 }
 
+// Index mengambil daftar metode pembayaran yang aktif
+// @Summary Ambil daftar metode pembayaran
+// @Description Mengambil daftar metode pembayaran yang berstatus aktif. Mendukung fitur caching Redis yang bisa diatur melalui query parameter.
+// @Tags Payment Methods
+// @Accept json
+// @Produce json
+// @Param cache query bool false "Gunakan cache (true/false)" default(false)
+// @Param cache_ttl query int false "Waktu hidup cache dalam detik" default(86400)
+// @Param cache_key query string false "Kunci referensi cache kustom" default("active-payment-methods")
+// @Success 200 {object} utils.OrderedSuccessResponse "Berhasil mendapatkan data payment method"
+// @Failure 500 {object} utils.OrderedErrorResponse "Gagal mendapatkan data payment method"
+// @Router /v1/payment-methods [get]
 func (ctrl *PaymentMethodController) Index(c fiber.Ctx) error {
 	isCache := fiber.Query[bool](c, "cache", false)
 	cacheTtl := fiber.Query[int](c, "cache_ttl", 60*60*24)
