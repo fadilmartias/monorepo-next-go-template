@@ -177,6 +177,10 @@ func authenticateAPIKey(ctx context.Context, key string, cfg GetUserConfig) (jwt
 		return nil, false, nil
 	}
 
+	if claims, ok := cfg.TestTokens[key]; ok {
+		return cloneClaims(claims), true, nil
+	}
+
 	if cfg.APIKey.Lookup != nil {
 		value, found, err := cfg.APIKey.Lookup(ctx, key)
 		if err != nil || !found {
