@@ -1,99 +1,94 @@
 package logger
 
 import (
-	"io"
 	"os"
-	"runtime"
-	"time"
 
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var (
-	Debug  func(args ...any)
-	Debugf func(template string, args ...any)
+// Internal logger instance
+var log *zap.SugaredLogger
 
-	Info  func(args ...any)
-	Infof func(template string, args ...any)
-
-	Warn  func(args ...any)
-	Warnf func(template string, args ...any)
-
-	Error  func(args ...any)
-	Errorf func(template string, args ...any)
-)
+// Export writer untuk HTTP middleware Fiber
+var FileWriter *lumberjack.Logger
 
 func Init() {
-	options := []rotatelogs.Option{
-		rotatelogs.WithMaxAge(30 * 24 * time.Hour),  // keep for 30 days
-		rotatelogs.WithRotationTime(24 * time.Hour), // rotate daily
+	os.MkdirAll("./storage/logs", 0755)
+
+	FileWriter = &lumberjack.Logger{
+		Filename:   "./storage/logs/app.log",
+		MaxSize:    10, // 10 MB
+		MaxBackups: 30,
+		MaxAge:     30, // 30 hari
+		Compress:   true,
+		LocalTime:  true,
 	}
 
-	// Only use symlink on non-Windows
-	if runtime.GOOS != "windows" {
-		options = append(options, rotatelogs.WithLinkName("./storage/logs/app.log"))
+	// 1. Konfigurasi Dasar Encoder (Format "Mudah Dibaca")
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        "time",
+		LevelKey:       "level",
+		MessageKey:     "msg",
+		CallerKey:      "caller",
+		EncodeTime:     zapcore.TimeEncoderOfLayout("02/01/2006 15:04:05"),
+		EncodeDuration: zapcore.StringDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	fileWriter, err := rotatelogs.New(
-		"./storage/logs/app-%Y-%m-%d.log", // template filename
-		options...,
-	)
-	if err != nil {
-		panic(err)
-	}
+	// 2. Setup Console Encoder (DENGAN WARNA)
+	consoleCfg := encoderConfig
+	consoleCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // Warna aktif!
+	consoleEncoder := zapcore.NewConsoleEncoder(consoleCfg)
 
-	// Encoder Config
-	encoderCfg := zapcore.EncoderConfig{
-		TimeKey:      "time",
-		LevelKey:     "level",
-		MessageKey:   "msg",
-		CallerKey:    "caller",
-		EncodeTime:   zapcore.TimeEncoderOfLayout("02-01-2006 15:04:05"),
-		EncodeLevel:  zapcore.CapitalLevelEncoder,
-		EncodeCaller: zapcore.ShortCallerEncoder,
-	}
+	// 3. Setup File Encoder (TANPA WARNA - agar file bersih)
+	fileCfg := encoderConfig
+	fileCfg.EncodeLevel = zapcore.CapitalLevelEncoder // Tanpa warna!
+	fileEncoder := zapcore.NewConsoleEncoder(fileCfg) // Gunakan format Console (bukan JSON) agar mudah dibaca manusia
 
-	// Output destination
+	// Writers
 	consoleWriter := zapcore.AddSync(os.Stdout)
-	fileZapWriter := zapcore.AddSync(io.MultiWriter(fileWriter))
+	fileZapWriter := zapcore.AddSync(FileWriter)
 
-	// Encoder
-	consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
-	jsonEncoder := zapcore.NewJSONEncoder(encoderCfg)
-
-	// Level selectors
-	// highPriority := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
-	// 	return l >= zapcore.ErrorLevel
-	// })
-	// lowPriority := zap.LevelEnablerFunc(func(l zapcore.Level) bool {
-	// 	return l < zapcore.ErrorLevel
-	// })
-
-	// Cores
+	// 4. Aturan Level Log
+	// Console: Tampilkan semua log dari level Debug hingga Error
 	consoleCore := zapcore.NewCore(consoleEncoder, consoleWriter, zapcore.DebugLevel)
-	fileCore := zapcore.NewCore(jsonEncoder, fileZapWriter, zapcore.DebugLevel)
 
-	// Combine cores
-	core := zapcore.NewTee(
-		consoleCore, // all levels to console
-		fileCore,    // only error+ to file
-	)
+	// File: TAMPILKAN INFO, WARN, dan ERROR.
+	// (Kita pakai InfoLevel agar kamu bisa pilih manual log mana yang mau dimasukkan ke file)
+	fileCore := zapcore.NewCore(fileEncoder, fileZapWriter, zapcore.InfoLevel)
 
-	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
-	sugar := logger.Sugar()
+	// Gabungkan
+	core := zapcore.NewTee(consoleCore, fileCore)
 
-	// Expose global functions
-	Debug = sugar.Debug
-	Debugf = sugar.Debugf
-
-	Info = sugar.Info
-	Infof = sugar.Infof
-
-	Warn = sugar.Warn
-	Warnf = sugar.Warnf
-
-	Error = sugar.Error
-	Errorf = sugar.Errorf
+	// AddStacktrace hanya akan print detail error saat benar-benar terjadi Error
+	baseLogger := zap.New(core, zap.AddStacktrace(zapcore.ErrorLevel))
+	log = baseLogger.Sugar()
 }
+
+// --- FUNGSI UNTUK MENGAMBIL REQUEST ID DARI FIBER ---
+// Gunakan ini di dalam handler/controller
+func Ctx(c fiber.Ctx) *zap.SugaredLogger {
+	// Fiber requestid middleware biasanya menyimpan ID di Locals("requestid")
+	reqID := c.Locals("requestid")
+	if reqID != nil {
+		// Inject request_id ke dalam log
+		return log.With("req_id", reqID)
+	}
+	return log
+}
+
+// --- FUNGSI GLOBAL (TANPA REQUEST ID) ---
+func Debug(args ...any)                   { log.Debug(args...) }
+func Debugf(template string, args ...any) { log.Debugf(template, args...) }
+
+func Info(args ...any)                   { log.Info(args...) }
+func Infof(template string, args ...any) { log.Infof(template, args...) }
+
+func Warn(args ...any)                   { log.Warn(args...) }
+func Warnf(template string, args ...any) { log.Warnf(template, args...) }
+
+func Error(args ...any)                   { log.Error(args...) }
+func Errorf(template string, args ...any) { log.Errorf(template, args...) }

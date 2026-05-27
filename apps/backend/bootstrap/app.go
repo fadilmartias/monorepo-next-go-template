@@ -78,7 +78,17 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 
 	// Logger middleware
 	app.Use(middleware.Logger())
-	app.Use(fLogger.New())
+
+	app.Use(fLogger.New(fLogger.Config{
+		Stream: os.Stdout, // Tulis log ke stdout
+
+		// Format teks biasa (mudah dibaca) yang selaras dengan Zap
+		Format:     "[${time}] ${status} | ${latency} | ${method} ${path} | req_id:${locals:requestid} | error:${error}\n",
+		TimeFormat: "02/01/2006 15:04:05",
+
+		// DisableColors wajib true agar file log tidak kemasukan karakter \u001b aneh
+		DisableColors: true,
+	}))
 
 	// DB connection
 	db := ConnectDB()
