@@ -58,8 +58,8 @@ func (ctrl *UserController) Show(c fiber.Ctx) error {
 }
 
 func (ctrl *UserController) UpdateProfile(c fiber.Ctx) error {
-	input := c.Locals("validatedBody").(requests.UpdateProfileInput)
-	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
+	input := c.Value("validatedBody").(requests.UpdateProfileInput)
+	id := c.Value("user").(jwt.MapClaims)["id"].(string)
 	user, err := ctrl.UserService.UpdateProfile(id, input)
 
 	if err != nil {
@@ -89,8 +89,8 @@ func (ctrl *UserController) UpdateProfile(c fiber.Ctx) error {
 }
 
 func (ctrl *UserController) UpdatePassword(c fiber.Ctx) error {
-	input := c.Locals("validatedBody").(requests.UpdatePasswordInput)
-	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
+	input := c.Value("validatedBody").(requests.UpdatePasswordInput)
+	id := c.Value("user").(jwt.MapClaims)["id"].(string)
 
 	err := ctrl.UserService.UpdatePassword(id, input)
 

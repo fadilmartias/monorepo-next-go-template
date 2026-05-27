@@ -9,7 +9,7 @@ import (
 
 func Guest() fiber.Handler {
 	return func(c fiber.Ctx) error {
-		if c.Locals("user") != nil || c.Get("Authorization") != "" {
+		if c.Value("user") != nil || c.Get("Authorization") != "" {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:    fiber.StatusForbidden,
 				Message: "Forbidden: User already logged in",

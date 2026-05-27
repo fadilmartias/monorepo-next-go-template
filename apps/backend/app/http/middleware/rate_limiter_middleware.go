@@ -34,7 +34,7 @@ func RateLimiter(max int, expiration time.Duration) fiber.Handler {
 		Max:        max,
 		Expiration: expiration,
 		KeyGenerator: func(c fiber.Ctx) string {
-			user := c.Locals("user")
+			user := c.Value("user")
 			if user != nil {
 				id := user.(jwt.MapClaims)["id"].(string)
 				if id != "" {

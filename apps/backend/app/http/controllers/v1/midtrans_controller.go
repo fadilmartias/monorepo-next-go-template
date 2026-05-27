@@ -102,7 +102,7 @@ package controllers_v1
 // }
 
 // func (ctrl *MidtransController) Webhook(c fiber.Ctx) error {
-// 	userData := c.Locals("user")
+// 	userData := c.Value("user")
 // 	role := ""
 // 	if userData != nil {
 // 		claims, ok := userData.(jwt.MapClaims)

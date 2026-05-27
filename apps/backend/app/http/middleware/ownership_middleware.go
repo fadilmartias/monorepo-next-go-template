@@ -13,7 +13,7 @@ import (
 func UserOwnership(inputColumn string, modelColumn string) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// Ambil user dari context
-		user, ok := c.Locals("user").(models.User)
+		user, ok := c.Value("user").(models.User)
 		if !ok {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:    fiber.StatusUnauthorized,

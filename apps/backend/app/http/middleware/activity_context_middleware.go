@@ -40,7 +40,7 @@ func ActivityContextMiddleware() fiber.Handler {
 
 		// Ambil user ID dari c.Locals("user_id")
 		// misal di auth middleware kamu sudah set ini
-		user := c.Locals("user")
+		user := c.Value("user")
 		var userID string
 
 		if user != nil {

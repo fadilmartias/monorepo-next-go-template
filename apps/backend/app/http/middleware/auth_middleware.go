@@ -11,7 +11,7 @@ import (
 
 func Auth(allowedRoles []string, allowedPermissions []string) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		userClaims := c.Locals("user")
+		userClaims := c.Value("user")
 		if userClaims == nil {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:    fiber.StatusUnauthorized,

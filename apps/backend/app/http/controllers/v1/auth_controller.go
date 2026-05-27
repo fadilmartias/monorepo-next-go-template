@@ -69,7 +69,7 @@ func (ctrl *AuthController) VerifyRecaptcha(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) Me(c fiber.Ctx) error {
-	user, ok := c.Locals("user").(jwt.MapClaims)
+	user, ok := c.Value("user").(jwt.MapClaims)
 	if !ok {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusUnauthorized,
@@ -93,7 +93,7 @@ func (ctrl *AuthController) Me(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) Logout(c fiber.Ctx) error {
-	user, ok := c.Locals("user").(jwt.MapClaims)
+	user, ok := c.Value("user").(jwt.MapClaims)
 	if !ok {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusUnauthorized,
@@ -335,7 +335,7 @@ func (ctrl *AuthController) ResetPassword(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) SendEmailVerification(c fiber.Ctx) error {
-	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
+	id := c.Value("user").(jwt.MapClaims)["id"].(string)
 	var user models.User
 	if err := ctrl.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -1062,7 +1062,7 @@ func (ctrl *AuthController) TwitchCallback(c fiber.Ctx) error {
 
 func (ctrl *AuthController) Register2FA(c fiber.Ctx) error {
 
-	user := c.Locals("user").(jwt.MapClaims)
+	user := c.Value("user").(jwt.MapClaims)
 
 	// Validasi email
 	if user["email"] == "" {
@@ -1091,7 +1091,7 @@ func (ctrl *AuthController) Register2FA(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) Verify2FA(c fiber.Ctx) error {
-	user := c.Locals("user").(jwt.MapClaims)
+	user := c.Value("user").(jwt.MapClaims)
 
 	input, err := utils.GetValidatedBody[requests.Verify2FARequest](c)
 	if err != nil {
@@ -1124,7 +1124,7 @@ func (ctrl *AuthController) Verify2FA(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) Disable2FA(c fiber.Ctx) error {
-	user := c.Locals("user").(jwt.MapClaims)
+	user := c.Value("user").(jwt.MapClaims)
 	if err := ctrl.AuthService.Disable2FA(user["id"].(string)); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
@@ -1137,7 +1137,7 @@ func (ctrl *AuthController) Disable2FA(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) SendOTP(c fiber.Ctx) error {
-	user := c.Locals("user")
+	user := c.Value("user")
 	input, err := utils.GetValidatedBody[requests.SendOTPRequest](c)
 	if err != nil {
 		return err
@@ -1179,7 +1179,7 @@ func (ctrl *AuthController) SendOTP(c fiber.Ctx) error {
 }
 
 func (ctrl *AuthController) VerifyOTP(c fiber.Ctx) error {
-	user := c.Locals("user")
+	user := c.Value("user")
 	input, err := utils.GetValidatedBody[requests.VerifyOTPRequest](c)
 	if err != nil {
 		return err
