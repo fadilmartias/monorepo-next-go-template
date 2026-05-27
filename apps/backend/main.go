@@ -2,9 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/jobs"
@@ -38,20 +35,14 @@ func main() {
 	// Muat konfigurasi port dari config
 	appConfig := config.LoadAppConfig()
 
-	// Tambahkan handler shutdown di goroutine
-	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-		<-c
-		log.Println("Shutting down...")
-		jobs.AsynqClient.Close()
-		jobs.AsynqServer.Stop()
-		redis.Close()
-		if err := app.Shutdown(); err != nil {
-			log.Fatalf("Shutdown error: %v", err)
+	app.Hooks().OnPostShutdown(func(err error) error {
+		if err != nil {
+			log.Printf("Shutdown error: %v", err)
+		} else {
+			log.Println("Shutdown successful")
 		}
-	}()
+		return nil
+	})
+	app.Listen(appConfig.Port)
 
-	// Jalankan server
-	log.Fatal(app.Listen(appConfig.Port))
 }

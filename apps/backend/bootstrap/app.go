@@ -23,6 +23,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
 	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/csrf"
 	"github.com/gofiber/fiber/v3/middleware/healthcheck"
 	"github.com/gofiber/fiber/v3/middleware/helmet"
 	fLogger "github.com/gofiber/fiber/v3/middleware/logger"
@@ -110,6 +111,7 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 		ExposeHeaders:    []string{"Set-Cookie"},
 	}))
 	app.Use(compress.New(compress.Config{
+
 		Level: compress.LevelBestSpeed, // 1
 	}))
 	app.Use(pprof.New(pprof.Config{
@@ -117,14 +119,13 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 			return config.LoadAppConfig().Env != "production"
 		},
 	}))
+	app.Use(csrf.New(csrf.Config{
+		IdleTimeout: 10 * time.Minute,
+	}))
+	app.Use(requestid.New())
+	app.Get("/*", static.New("./public")) // Static file
+	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
 	app.Get(healthcheck.LivenessEndpoint, healthcheck.New())
-	app.Use(requestid.New())
-	app.Get("/*", static.New("./public")) // Static file
-	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
-	app.Get(healthcheck.ReadinessEndpoint, healthcheck.New())
-	app.Use(requestid.New())
-	app.Get("/*", static.New("./public")) // Static file
-	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
 	cronjob.StartCronJob(db, redis)
 
 	// Register routes
