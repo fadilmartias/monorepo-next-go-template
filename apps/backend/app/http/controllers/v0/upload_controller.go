@@ -8,19 +8,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fadilmartias/dilz_code/apps/backend/app/utils" // Ganti dengan path utils Anda
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
-
+	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
 type UploadController struct {
 	DB    *gorm.DB
-	Redis *config.RedisClient
+	Redis *redis.Client
 }
 
-func NewUploadController(db *gorm.DB, redis *config.RedisClient) *UploadController {
+func NewUploadController(db *gorm.DB, redis *redis.Client) *UploadController {
 	return &UploadController{DB: db, Redis: redis}
 }
 
@@ -55,7 +54,6 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		})
 	}
 
-	// Validasi Content-Type
 	contentType := uploadedFile.Header.Get("Content-Type")
 	allowedTypes := map[string]string{
 		"image/jpeg":    ".jpg",
@@ -73,7 +71,6 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		}
 	}
 
-	// Buat folder public/tmp/images jika belum ada
 	var uploadDir string
 	if fieldName == "tinymce" {
 		uploadDir = "public/uploads/tinymce"
@@ -87,13 +84,11 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		})
 	}
 
-	// Rename file dengan timestamp dan random string
 	timestamp := time.Now().Unix()
-	randomStr := utils.GenerateShortID(6) // pastikan ini menghasilkan string acak
+	randomStr := utils.GenerateShortID(6)
 	newFileName := fmt.Sprintf("%s-%d-%s%s", fieldName, timestamp, randomStr, ext)
 	savePath := filepath.Join(uploadDir, newFileName)
 
-	// Simpan file
 	if err := c.SaveFile(uploadedFile, savePath); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
@@ -101,7 +96,6 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		})
 	}
 
-	// File URL
 	var fileURL string
 	if fieldName == "tinymce" {
 		fileURL = fmt.Sprintf(os.Getenv("APP_URL")+"/uploads/tinymce/%s", newFileName)
@@ -109,7 +103,6 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		fileURL = fmt.Sprintf(os.Getenv("APP_URL")+"/uploads/tmp/%ss/%s", strings.ToLower(fieldName), newFileName)
 	}
 
-	// Respons sukses
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Code:    fiber.StatusOK,
 		Message: "Upload successfully",

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq"
 )
 
@@ -13,19 +13,20 @@ var (
 	AsynqServer *asynq.Server
 )
 
-func InitQueue(redisClient *config.RedisClient) {
+func InitQueue(redisClient *redis.Client) {
 	// Pakai redis options yang sama
+	options := redisClient.Options()
 	AsynqClient = asynq.NewClient(asynq.RedisClientOpt{
-		Addr:     redisClient.GetClient().Options().Addr,
-		Password: redisClient.GetClient().Options().Password,
-		DB:       redisClient.GetClient().Options().DB,
+		Addr:     options.Addr,
+		Password: options.Password,
+		DB:       options.DB,
 	})
 
 	AsynqServer = asynq.NewServer(
 		asynq.RedisClientOpt{
-			Addr:     redisClient.GetClient().Options().Addr,
-			Password: redisClient.GetClient().Options().Password,
-			DB:       redisClient.GetClient().Options().DB,
+			Addr:     options.Addr,
+			Password: options.Password,
+			DB:       options.DB,
 		},
 		asynq.Config{
 			Concurrency: 10,

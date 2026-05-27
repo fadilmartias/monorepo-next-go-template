@@ -5,17 +5,17 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
 type ArticleService struct {
 	DB                *gorm.DB
 	ArticleRepository *repositories.ArticleRepository
-	Redis             *config.RedisClient
+	Redis             *redis.Client
 }
 
-func NewArticleService(db *gorm.DB, redis *config.RedisClient, articleRepository *repositories.ArticleRepository) *ArticleService {
+func NewArticleService(db *gorm.DB, redis *redis.Client, articleRepository *repositories.ArticleRepository) *ArticleService {
 	return &ArticleService{DB: db, ArticleRepository: articleRepository, Redis: redis}
 }
 

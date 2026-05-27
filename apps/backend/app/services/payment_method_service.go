@@ -10,16 +10,17 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/gofiber/fiber/v3"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
 type PaymentMethodService struct {
 	DB                      *gorm.DB
 	PaymentMethodRepository *repositories.PaymentMethodRepository
-	Redis                   *config.RedisClient
+	Redis                   *redis.Client
 }
 
-func NewPaymentMethodService(db *gorm.DB, redis *config.RedisClient, paymentMethodRepository *repositories.PaymentMethodRepository) *PaymentMethodService {
+func NewPaymentMethodService(db *gorm.DB, redis *redis.Client, paymentMethodRepository *repositories.PaymentMethodRepository) *PaymentMethodService {
 	return &PaymentMethodService{DB: db, PaymentMethodRepository: paymentMethodRepository, Redis: redis}
 }
 
@@ -33,7 +34,7 @@ func (s *PaymentMethodService) GetActivePaymentMethods(
 
 	// 🧩 1. Cek cache dulu
 	if isCache {
-		if data, err := s.Redis.Get(ctx, cacheKey); err == nil && data != "" {
+		if data, err := s.Redis.Get(ctx, config.Key(cacheKey)).Result(); err == nil && data != "" {
 			var methods []dto.PaymentMethodDTO
 			if err := sonic.Unmarshal([]byte(data), &methods); err == nil {
 				// Cache hit 🎯
@@ -85,7 +86,7 @@ func (s *PaymentMethodService) GetActivePaymentMethods(
 	if isCache {
 		b, err := sonic.Marshal(grouped)
 		if err == nil {
-			if err := s.Redis.Set(ctx, cacheKey, b, time.Duration(cacheTtl)*time.Second); err != nil {
+			if err := s.Redis.Set(ctx, config.Key(cacheKey), b, time.Duration(cacheTtl)*time.Second); err != nil {
 				// Log tapi jangan gagalkan request
 				fmt.Printf("Redis set error for key %s: %v\n", cacheKey, err)
 			}

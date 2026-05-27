@@ -4,7 +4,7 @@ Update this file after every meaningful implementation change.
 
 ## Current Phase
 
-- In progress — syncing context files with repository.
+- Completed — backend utility migration and validation.
 
 ## Current Goal
 
@@ -18,10 +18,17 @@ Update this file after every meaningful implementation change.
 - Reviewed and updated `ui-context.md`.
 - Reviewed and updated `code-standards.md`.
 - Reviewed and updated `ai-workflow-rules.md`.
+- Replaced custom Redis wrapper with direct `*redis.Client` usage.
+- Updated Redis wiring across controllers, services, jobs, and CLI.
+- Replaced Resty-based HTTP helper with a Fiber v3 client adapter.
+- Preserved the existing `Http()` fluent surface for backward compatibility.
+- Verified the backend with `go test ./...` after the HTTP client migration.
+- Migrated Telegram, Fonnte, and OAuth HTTP flows to the shared `Http()` helper.
+- Removed the Resty dependency from module usage with `go mod tidy`.
 
 ## In Progress
 
-- Update `progress-tracker.md` (this file).
+- None.
 
 ## Next Up
 

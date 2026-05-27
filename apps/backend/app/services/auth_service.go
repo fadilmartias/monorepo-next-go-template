@@ -15,6 +15,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/gofiber/fiber/v3"
+	"github.com/go-redis/redis/v8"
 	"github.com/pquerna/otp/totp"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/bcrypt"
@@ -27,10 +28,10 @@ type AuthService struct {
 	DB                 *gorm.DB
 	UserRepository     *repositories.UserRepository
 	ActivityLogService *ActivityLogService
-	Redis              *config.RedisClient
+	Redis              *redis.Client
 }
 
-func NewAuthService(db *gorm.DB, redis *config.RedisClient, userRepository *repositories.UserRepository, activityLogService *ActivityLogService) *AuthService {
+func NewAuthService(db *gorm.DB, redis *redis.Client, userRepository *repositories.UserRepository, activityLogService *ActivityLogService) *AuthService {
 	return &AuthService{DB: db, UserRepository: userRepository, Redis: redis, ActivityLogService: activityLogService}
 }
 
@@ -250,7 +251,7 @@ func (s *AuthService) Register2FA(email string) (string, string, error) {
 func (s *AuthService) VerifyUserTOTPSecret(email string, code string, isLogin bool) error {
 	var secret string
 	if !isLogin {
-		secretRedis, err := s.Redis.Get(context.Background(), fmt.Sprintf("totp:%s", email))
+		secretRedis, err := s.Redis.Get(context.Background(), config.Key(fmt.Sprintf("totp:%s", email))).Result()
 		if err != nil {
 			return err
 		}
@@ -275,7 +276,7 @@ func (s *AuthService) VerifyUserTOTPSecret(email string, code string, isLogin bo
 		return errors.New("kode TOTP tidak valid")
 	}
 	// Hapus kunci TOTP dari Redis
-	if err := s.Redis.Del(context.Background(), fmt.Sprintf("totp:%s", email)); err != nil {
+	if err := s.Redis.Del(context.Background(), config.Key(fmt.Sprintf("totp:%s", email))).Err(); err != nil {
 		return err
 	}
 	userDB, err := s.UserRepository.FindByEmail(email)
@@ -306,7 +307,7 @@ func (s *AuthService) SendOTP(ctx context.Context, targetType string, target str
 }
 
 func (s *AuthService) VerifyOTP(ctx context.Context, target string, subject string, otp string) error {
-	storedOtp, err := s.Redis.Get(ctx, fmt.Sprintf("otp:%s:%s", subject, target))
+	storedOtp, err := s.Redis.Get(ctx, config.Key(fmt.Sprintf("otp:%s:%s", subject, target))).Result()
 	if err != nil {
 		return err
 	}

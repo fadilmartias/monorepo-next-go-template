@@ -3,7 +3,7 @@ package controllers_v1
 import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
@@ -12,10 +12,10 @@ import (
 type SettingController struct {
 	BaseController
 	DB    *gorm.DB
-	Redis *config.RedisClient
+	Redis *redis.Client
 }
 
-func NewSettingController(db *gorm.DB, redis *config.RedisClient) *SettingController {
+func NewSettingController(db *gorm.DB, redis *redis.Client) *SettingController {
 	return &SettingController{DB: db, Redis: redis}
 }
 

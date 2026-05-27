@@ -2,7 +2,7 @@ package controllers_v1
 
 import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
@@ -11,10 +11,10 @@ import (
 type CategoryController struct {
 	BaseController
 	DB    *gorm.DB
-	Redis *config.RedisClient
+	Redis *redis.Client
 }
 
-func NewCategoryController(db *gorm.DB, redis *config.RedisClient) *CategoryController {
+func NewCategoryController(db *gorm.DB, redis *redis.Client) *CategoryController {
 	return &CategoryController{DB: db, Redis: redis}
 }
 

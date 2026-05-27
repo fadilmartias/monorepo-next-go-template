@@ -21,7 +21,10 @@ var dbMigrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Run database migrations",
 	Run: func(cmd *cobra.Command, args []string) {
-		db := bootstrap.ConnectDB()
+		db, err := bootstrap.ConnectDB()
+		if err != nil {
+			panic(err)
+		}
 		db.AutoMigrate(&models.SchemaMigration{})
 
 		seed, _ := cmd.Flags().GetBool("seed")
@@ -44,7 +47,10 @@ var dbRollbackCmd = &cobra.Command{
 	Use:   "migrate:rollback",
 	Short: "Rollback the last database migration",
 	Run: func(cmd *cobra.Command, args []string) {
-		db := bootstrap.ConnectDB()
+		db, err := bootstrap.ConnectDB()
+		if err != nil {
+			panic(err)
+		}
 		db.AutoMigrate(&models.SchemaMigration{})
 
 		var last models.SchemaMigration
@@ -65,7 +71,10 @@ var dbMigrateFreshCmd = &cobra.Command{
 	Use:   "migrate:fresh",
 	Short: "Drop all tables and re-run all migrations",
 	Run: func(cmd *cobra.Command, args []string) {
-		db := bootstrap.ConnectDB()
+		db, err := bootstrap.ConnectDB()
+		if err != nil {
+			panic(err)
+		}
 		db.AutoMigrate(&models.SchemaMigration{})
 
 		seed, _ := cmd.Flags().GetBool("seed")
@@ -102,7 +111,10 @@ var dbMigrateStatusCmd = &cobra.Command{
 	Use:   "migrate:status",
 	Short: "List all migrations and their status",
 	Run: func(cmd *cobra.Command, args []string) {
-		db := bootstrap.ConnectDB()
+		db, err := bootstrap.ConnectDB()
+		if err != nil {
+			panic(err)
+		}
 		_ = db.AutoMigrate(&models.SchemaMigration{}) // pastikan table schema_migrations tersedia
 
 		applied := map[string]bool{}

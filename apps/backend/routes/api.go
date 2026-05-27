@@ -13,15 +13,15 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/usecases"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/fadilmartias/dilz_code/apps/backend/graph"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
-func RegisterApiRoutes(app *fiber.App, db *gorm.DB, redis *config.RedisClient) {
+func RegisterApiRoutes(app *fiber.App, db *gorm.DB, redis *redis.Client) {
 	// ========= GLOBAL MIDDLEWARE =========
 	app.Use(middleware.TraceIDMiddleware())
 	app.Use(middleware.ActivityContextMiddleware())

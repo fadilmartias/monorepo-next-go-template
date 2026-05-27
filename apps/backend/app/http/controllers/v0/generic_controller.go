@@ -10,7 +10,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/processors"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/registry"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils" // Ganti dengan path utils Anda
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
@@ -18,10 +18,10 @@ import (
 
 type GenericController struct {
 	DB    *gorm.DB
-	Redis *config.RedisClient
+	Redis *redis.Client
 }
 
-func NewGenericController(db *gorm.DB, redis *config.RedisClient) *GenericController {
+func NewGenericController(db *gorm.DB, redis *redis.Client) *GenericController {
 	return &GenericController{DB: db, Redis: redis}
 }
 

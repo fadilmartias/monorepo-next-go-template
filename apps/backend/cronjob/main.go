@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
-func StartCronJob(db *gorm.DB, redis *config.RedisClient) {
+func StartCronJob(db *gorm.DB) {
 	c := cron.New()
 
 	// Tambahkan cron yang jalan setiap jam 12 malam

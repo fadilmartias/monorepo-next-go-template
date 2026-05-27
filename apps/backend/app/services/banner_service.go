@@ -4,17 +4,17 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
 type BannerService struct {
 	DB               *gorm.DB
 	BannerRepository *repositories.BannerRepository
-	Redis            *config.RedisClient
+	Redis            *redis.Client
 }
 
-func NewBannerService(db *gorm.DB, redis *config.RedisClient, bannerRepository *repositories.BannerRepository) *BannerService {
+func NewBannerService(db *gorm.DB, redis *redis.Client, bannerRepository *repositories.BannerRepository) *BannerService {
 	return &BannerService{DB: db, BannerRepository: bannerRepository, Redis: redis}
 }
 

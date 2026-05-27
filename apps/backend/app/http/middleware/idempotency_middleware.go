@@ -7,6 +7,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/gofiber/fiber/v3"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )
 
@@ -18,7 +19,7 @@ type cachedResponse struct {
 // Lama penyimpanan hasil (misal 5 menit)
 const cacheTTL = 5 * time.Minute
 
-func Idempotency(redis *config.RedisClient) fiber.Handler {
+func Idempotency(redis *redis.Client) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		if fiber.IsMethodSafe(c.Method()) {
 			return c.Next()
@@ -30,10 +31,10 @@ func Idempotency(redis *config.RedisClient) fiber.Handler {
 		}
 
 		ctx := c.Context()
-		cacheKey := "idem:" + key
+		cacheKey := config.Key("idem:" + key)
 
 		// 🔹 Cek apakah sudah pernah disimpan
-		val, err := redis.Get(ctx, cacheKey)
+		val, err := redis.Get(ctx, cacheKey).Result()
 		if err == nil && val != "" {
 			var cached cachedResponse
 			if err := sonic.Unmarshal([]byte(val), &cached); err == nil {

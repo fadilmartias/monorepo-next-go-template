@@ -30,6 +30,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/pprof"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
+	"github.com/go-redis/redis/v8"
 	glogger "gorm.io/gorm/logger"
 
 	"github.com/joho/godotenv"
@@ -37,7 +38,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
+func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 
 	// Init logger
 	logger.Init()
@@ -88,18 +89,33 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 	}))
 
 	// DB connection
-	db := ConnectDB()
+	db, err := ConnectDB()
+	if err != nil {
+		log.Fatalf("Could not connect to database: %v", err)
+	}
 
 	// Redis connection
-	redis := config.NewRedisClient()
+	redisConfig := config.LoadRedisConfig()
+	redis := redis.NewClient(&redis.Options{
+		Addr:     redisConfig.Addr,
+		Password: redisConfig.Password,
+		DB:       redisConfig.DB,
+	})
+	if err := redis.Ping(context.Background()).Err(); err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
 
 	// Subscribe di startup
-	redis.Subscribe(context.Background(), "leaderboard-global", func(payload string) {
-		fmt.Println("Dapet update leaderboard:", payload)
+	pubSub := redis.Subscribe(context.Background(), "leaderboard-global")
+	go func() {
+		defer pubSub.Close()
+		for msg := range pubSub.Channel() {
+			fmt.Println("Dapet update leaderboard:", msg.Payload)
 
-		// Broadcast ke websocket clients
-		utils.WebsocketBroadcast("leaderboard-global", payload)
-	})
+			// Broadcast ke websocket clients
+			utils.WebsocketBroadcast("leaderboard-global", msg.Payload)
+		}
+	}()
 
 	// Use middleware
 	app.Use(recover.New(recover.Config{
@@ -133,7 +149,7 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 	app.Get("/*", static.New("./public")) // Static file
 	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
 	app.Get(healthcheck.LivenessEndpoint, healthcheck.New())
-	cronjob.StartCronJob(db, redis)
+	cronjob.StartCronJob(db)
 
 	// Register routes
 	routes.RegisterApiRoutes(app, db, redis)
@@ -142,7 +158,7 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 	return app, db, redis
 }
 
-func ConnectDB() *gorm.DB {
+func ConnectDB() (*gorm.DB, error) {
 	dbConfig := config.LoadDBConfig()
 	appConfig := config.LoadAppConfig()
 
@@ -167,11 +183,11 @@ func ConnectDB() *gorm.DB {
 		Logger: gormLogger,
 	})
 	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
+		return nil, err
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("Could not get database instance: %v", err)
+		return nil, err
 	}
 	if appConfig.Env != "production" {
 		sqlDB.SetMaxIdleConns(5)  // cukup 5 idle
@@ -183,5 +199,5 @@ func ConnectDB() *gorm.DB {
 		sqlDB.SetConnMaxLifetime(time.Hour) // recycle tiap 1 jam
 
 	}
-	return db
+	return db, nil
 }

@@ -15,7 +15,7 @@ import (
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/go-redis/redis/v8" // atau v9
+	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
 )
@@ -381,7 +381,7 @@ func buildPagination(totalItems int64, params *QueryParams) responses.Pagination
  * Fungsi ini generik dan dapat bekerja dengan model GORM apa pun.
  *
  * @template T - Tipe struct model GORM (misal: User, Post).
- * @param {*config.RedisClient} redisClient - Instance klien Redis yang aktif.
+ * @param {*redis.Client} redisClient - Instance klien Redis yang aktif.
  * @param {*gorm.DB} db - Instance kueri GORM yang sudah dibangun (oleh BuildGormQuery).
  * @param {*QueryParams} params - Parameter query yang sudah diparsing, diperlukan untuk paginasi.
  * @param {string} cacheKey - Kunci unik untuk caching di Redis. Jika string kosong, caching dilewati.
@@ -391,7 +391,7 @@ func buildPagination(totalItems int64, params *QueryParams) responses.Pagination
  */
 func FetchAndCacheDynamic(
 	ctx context.Context,
-	redisClient *config.RedisClient,
+	redisClient *redis.Client,
 	db *gorm.DB,
 	params *QueryParams,
 	cacheKey string,
@@ -412,7 +412,7 @@ func FetchAndCacheDynamic(
 
 	// ================== 1. Coba Ambil dari Cache ==================
 	if cacheKey != "" {
-		cachedData, err := redisClient.Get(ctx, cacheKey)
+		cachedData, err := redisClient.Get(ctx, config.Key(cacheKey)).Result()
 		if err == nil {
 			if isSingle {
 				result := reflect.New(responseType).Interface()

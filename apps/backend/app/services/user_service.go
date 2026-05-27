@@ -7,7 +7,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/requests"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/go-redis/redis/v8"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -15,10 +15,10 @@ import (
 type UserService struct {
 	DB             *gorm.DB
 	UserRepository *repositories.UserRepository
-	Redis          *config.RedisClient
+	Redis          *redis.Client
 }
 
-func NewUserService(db *gorm.DB, redis *config.RedisClient, userRepository *repositories.UserRepository) *UserService {
+func NewUserService(db *gorm.DB, redis *redis.Client, userRepository *repositories.UserRepository) *UserService {
 	return &UserService{DB: db, UserRepository: userRepository, Redis: redis}
 }
 

@@ -19,7 +19,7 @@ func main() {
 
 	// 1. Jalankan Asynq Server (Start() sudah non-blocking dari asalnya)
 	logger.Debug("Starting Asynq server...")
-	if err := jobs.AsynqServer.Start(job_handlers.NewHandler(db, redis)); err != nil {
+	if err := jobs.AsynqServer.Start(job_handlers.NewHandler(db)); err != nil {
 		logger.Errorf("Asynq server error: %v", err)
 	}
 	logger.Debug("Asynq server is ready")

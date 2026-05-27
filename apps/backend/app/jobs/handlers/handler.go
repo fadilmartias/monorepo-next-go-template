@@ -3,12 +3,11 @@ package job_handlers
 import (
 	job_tasks "github.com/fadilmartias/dilz_code/apps/backend/app/jobs/tasks"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/hibiken/asynq"
 	"gorm.io/gorm"
 )
 
-func NewHandler(db *gorm.DB, redis *config.RedisClient) *asynq.ServeMux {
+func NewHandler(db *gorm.DB) *asynq.ServeMux {
 	mux := asynq.NewServeMux()
 	telegramService := services.NewTelegramService()
 

@@ -85,6 +85,10 @@ func Ctx(c fiber.Ctx) *zap.SugaredLogger {
 	return log
 }
 
+func Base() *zap.SugaredLogger {
+	return log
+}
+
 // --- FUNGSI GLOBAL (TANPA REQUEST ID) ---
 func Debug(args ...any)                   { log.Debug(args...) }
 func Debugf(template string, args ...any) { log.Debugf(template, args...) }

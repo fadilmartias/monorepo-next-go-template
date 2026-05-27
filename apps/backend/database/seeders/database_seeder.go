@@ -8,7 +8,10 @@ import (
 
 // RunAllSeeders adalah entry point untuk menjalankan semua seeder.
 func RunAllSeeders() {
-	db := bootstrap.ConnectDB()
+	db, err := bootstrap.ConnectDB()
+	if err != nil {
+		panic(err)
+	}
 	log.Println("Running all seeders...")
 
 	SeedUsers(db, 20)          // Buat 20 user palsu

@@ -1,8 +1,9 @@
 package services
 
 import (
+	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/go-resty/resty/v2"
+	"github.com/gofiber/fiber/v3/client"
 )
 
 type TelegramService struct {
@@ -12,17 +13,15 @@ func NewTelegramService() *TelegramService {
 	return &TelegramService{}
 }
 
-func (s *TelegramService) Request(endpoint string, body map[string]any) (*resty.Response, error) {
+func (s *TelegramService) Request(endpoint string, body map[string]any) (*client.Response, error) {
 	telegramConfig := config.LoadTelegramConfig()
-	client := resty.New().
-		SetBaseURL(telegramConfig.BaseURL+"/bot"+telegramConfig.BotToken).
-		SetHeader("Content-Type", "application/json")
-	return client.R().
-		SetBody(body).
-		Post(endpoint)
+	return utils.Http().
+		WithHeader("Content-Type", "application/json").
+		WithJSON(body).
+		Post(telegramConfig.BaseURL + "/bot" + telegramConfig.BotToken + endpoint)
 }
 
-func (s *TelegramService) SendMessage(text string) (*resty.Response, error) {
+func (s *TelegramService) SendMessage(text string) (*client.Response, error) {
 	body := map[string]any{
 		"chat_id": config.LoadTelegramConfig().DefaultChatID,
 		"text":    text,

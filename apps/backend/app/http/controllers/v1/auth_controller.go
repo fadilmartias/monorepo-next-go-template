@@ -14,7 +14,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/go-resty/resty/v2"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
 	"github.com/tidwall/gjson"
 
@@ -28,11 +28,11 @@ type AuthController struct {
 	EmailService *services.EmailService
 	AuthService  *services.AuthService
 	DB           *gorm.DB // Tambahkan ini untuk menyimpan koneksi DB
-	Redis        *config.RedisClient
+	Redis        *redis.Client
 }
 
 // Ubah fungsi NewAuthController untuk menerima koneksi DB
-func NewAuthController(db *gorm.DB, redis *config.RedisClient, userService *services.UserService, emailService *services.EmailService, authService *services.AuthService) *AuthController {
+func NewAuthController(db *gorm.DB, redis *redis.Client, userService *services.UserService, emailService *services.EmailService, authService *services.AuthService) *AuthController {
 	return &AuthController{DB: db, Redis: redis, UserService: userService, EmailService: emailService, AuthService: authService}
 }
 
@@ -349,7 +349,7 @@ func (ctrl *AuthController) SendEmailVerification(c fiber.Ctx) error {
 			Message: "Email sudah terverifikasi",
 		})
 	}
-	_, err := ctrl.Redis.Get(c.Context(), fmt.Sprintf("email_verification_token:%s", user.Email))
+	_, err := ctrl.Redis.Get(c.Context(), config.Key(fmt.Sprintf("email_verification_token:%s", user.Email))).Result()
 	if err == nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusConflict,
@@ -361,7 +361,7 @@ func (ctrl *AuthController) SendEmailVerification(c fiber.Ctx) error {
 		"email": user.Email,
 	}, time.Minute*5)
 
-	if err := ctrl.Redis.Set(c.Context(), fmt.Sprintf("email_verification_token:%s", user.Email), jwtToken, time.Minute*5); err != nil {
+	if err := ctrl.Redis.Set(c.Context(), config.Key(fmt.Sprintf("email_verification_token:%s", user.Email)), jwtToken, time.Minute*5).Err(); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
 			Message: "Gagal menyimpan token verifikasi email",
@@ -526,9 +526,8 @@ func (ctrl *AuthController) GoogleCallback(c fiber.Ctx) error {
 	redirectURI := os.Getenv("APP_URL") + "/v1/auth/google/callback"
 
 	// Tukar code ke token
-	resp, err := resty.New().
-		R().
-		SetFormData(map[string]string{
+	resp, err := utils.Http().
+		WithFormData(map[string]string{
 			"code":          code,
 			"client_id":     clientID,
 			"client_secret": clientSecret,
@@ -546,9 +545,8 @@ func (ctrl *AuthController) GoogleCallback(c fiber.Ctx) error {
 	accessTokenGoogle := gjson.GetBytes(resp.Body(), "access_token").String()
 
 	// Ambil profile
-	userResp, err := resty.New().
-		R().
-		SetAuthToken(accessTokenGoogle).
+	userResp, err := utils.Http().
+		WithAuthToken(accessTokenGoogle).
 		Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -611,9 +609,8 @@ func (ctrl *AuthController) DiscordCallback(c fiber.Ctx) error {
 	redirectURI := appConfig.BaseURL + "/v1/auth/discord/callback"
 
 	// Tukar code ke token
-	resp, err := resty.New().
-		R().
-		SetFormData(map[string]string{
+	resp, err := utils.Http().
+		WithFormData(map[string]string{
 			"code":          code,
 			"client_id":     discordConfig.ClientID,
 			"client_secret": discordConfig.ClientSecret,
@@ -631,9 +628,8 @@ func (ctrl *AuthController) DiscordCallback(c fiber.Ctx) error {
 	accessTokenDiscord := gjson.GetBytes(resp.Body(), "access_token").String()
 
 	// Ambil profile
-	userResp, err := resty.New().
-		R().
-		SetAuthToken(accessTokenDiscord).
+	userResp, err := utils.Http().
+		WithAuthToken(accessTokenDiscord).
 		Get("https://discord.com/api/users/@me")
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -685,9 +681,8 @@ func (ctrl *AuthController) GoogleOneTap(c fiber.Ctx) error {
 
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 
-	resp, err := resty.New().
-		R().
-		SetQueryParam("id_token", body.Credential).
+	resp, err := utils.Http().
+		WithQuery(map[string]string{"id_token": body.Credential}).
 		Get("https://oauth2.googleapis.com/tokeninfo")
 
 	if err != nil {
@@ -782,7 +777,7 @@ func (ctrl *AuthController) FacebookCallback(c fiber.Ctx) error {
 		clientID, url.QueryEscape(redirectURI), clientSecret, code,
 	)
 
-	resp, err := resty.New().R().Get(tokenURL)
+	resp, err := utils.Http().Get(tokenURL)
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
@@ -806,7 +801,7 @@ func (ctrl *AuthController) FacebookCallback(c fiber.Ctx) error {
 
 	// 2. Ambil user info dari Facebook Graph API
 	userInfoURL := fmt.Sprintf("https://graph.facebook.com/me?fields=id,name,email&access_token=%s", accessToken)
-	userResp, err := resty.New().R().Get(userInfoURL)
+	userResp, err := utils.Http().Get(userInfoURL)
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
@@ -874,11 +869,15 @@ func (ctrl *AuthController) SteamCallback(c fiber.Ctx) error {
 		}
 	}
 	form.Set("openid.mode", "check_authentication")
+	formData := make(map[string]string, len(form))
+	for key, values := range form {
+		if len(values) > 0 {
+			formData[key] = values[0]
+		}
+	}
 
-	resp, err := resty.New().
-		R().
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetBody(form.Encode()).
+	resp, err := utils.Http().
+		WithFormData(formData).
 		Post("https://steamcommunity.com/openid/login")
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -886,7 +885,7 @@ func (ctrl *AuthController) SteamCallback(c fiber.Ctx) error {
 			Message: "Steam verification failed: " + err.Error(),
 		}, err)
 	}
-	if resp.StatusCode() != 200 || !strings.Contains(resp.String(), "is_valid:true") {
+	if resp.StatusCode() != 200 || !strings.Contains(string(resp.Body()), "is_valid:true") {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusUnauthorized,
 			Message: "Invalid Steam login",
@@ -911,7 +910,7 @@ func (ctrl *AuthController) SteamCallback(c fiber.Ctx) error {
 			"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%s",
 			apiKey, steamID,
 		)
-		profileResp, err := resty.New().R().Get(profileURL)
+		profileResp, err := utils.Http().Get(profileURL)
 		if err == nil && profileResp.StatusCode() == 200 {
 			name = gjson.GetBytes(profileResp.Body(), "response.players.0.personaname").String()
 		}
@@ -972,10 +971,9 @@ func (ctrl *AuthController) TwitchCallback(c fiber.Ctx) error {
 	redirectURI := appConfig.BaseURL + "/v1/auth/twitch/callback"
 
 	// 1. Tukar code -> access token
-	tokenResp, err := resty.New().
-		R().
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetFormData(map[string]string{
+	tokenResp, err := utils.Http().
+		WithHeader("Content-Type", "application/x-www-form-urlencoded").
+		WithFormData(map[string]string{
 			"client_id":     clientID,
 			"client_secret": clientSecret,
 			"code":          code,
@@ -1006,10 +1004,11 @@ func (ctrl *AuthController) TwitchCallback(c fiber.Ctx) error {
 	}
 
 	// 2. Ambil data user
-	userResp, err := resty.New().
-		R().
-		SetHeader("Authorization", "Bearer "+accessToken).
-		SetHeader("Client-Id", clientID).
+	userResp, err := utils.Http().
+		WithHeaders(map[string]string{
+			"Authorization": "Bearer " + accessToken,
+			"Client-Id":     clientID,
+		}).
 		Get("https://api.twitch.tv/helix/users")
 
 	if err != nil {

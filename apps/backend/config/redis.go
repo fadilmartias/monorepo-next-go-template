@@ -2,11 +2,9 @@ package config
 
 import (
 	"context"
-	"log"
 	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -16,11 +14,6 @@ type RedisConfig struct {
 	Password string
 	DB       int
 	Prefix   string
-}
-
-type RedisClient struct {
-	client *redis.Client
-	prefix string
 }
 
 var (
@@ -41,75 +34,25 @@ func LoadRedisConfig() *RedisConfig {
 	return redisConfig
 }
 
-func NewRedisClient() *RedisClient {
+func Key(k string) string {
 	redisConfig := LoadRedisConfig()
-	client := redis.NewClient(&redis.Options{
-		Addr:     redisConfig.Addr,
-		Password: redisConfig.Password,
-		DB:       redisConfig.DB,
-	})
-
-	if err := client.Ping(context.Background()).Err(); err != nil {
-		log.Fatalf("Could not connect to Redis: %v", err)
+	if redisConfig == nil || redisConfig.Prefix == "" {
+		return k
 	}
-
-	return &RedisClient{
-		client: client,
-		prefix: redisConfig.Prefix + ":",
-	}
+	return redisConfig.Prefix + ":" + k
 }
 
-func (r *RedisClient) key(k string) string {
-	return r.prefix + k
-}
-
-func (r *RedisClient) Set(ctx context.Context, key string, value any, expiration time.Duration) error {
-	return r.client.Set(ctx, r.key(key), value, expiration).Err()
-}
-
-func (r *RedisClient) Get(ctx context.Context, key string) (string, error) {
-	return r.client.Get(ctx, r.key(key)).Result()
-}
-
-func (r *RedisClient) GetBytes(ctx context.Context, key string) ([]byte, error) {
-	return r.client.Get(ctx, r.key(key)).Bytes()
-}
-
-func (r *RedisClient) Del(ctx context.Context, key string) error {
-	return r.client.Del(ctx, r.key(key)).Err()
-}
-
-func (r *RedisClient) GetClient() *redis.Client {
-	return r.client
-}
-
-func (r *RedisClient) Close() error {
-	return r.client.Close()
-}
-
-func (r *RedisClient) FlushDB() error {
-	return r.client.FlushDB(context.Background()).Err()
-}
-
-func (r *RedisClient) FlushAll() error {
-	return r.client.FlushAll(context.Background()).Err()
-}
-
-func (r *RedisClient) Keys(ctx context.Context, pattern string) ([]string, error) {
-	return r.client.Keys(ctx, pattern).Result()
-}
-
-func (r *RedisClient) DeleteKeysByPrefix(ctx context.Context, prefix string) error {
+func DeleteKeysByPrefix(ctx context.Context, client *redis.Client, prefix string) error {
 	batchSize := 500 // jumlah key dihapus per batch
 	keysToDelete := make([]string, 0, batchSize)
 
-	iter := r.client.Scan(ctx, 0, prefix+"*", 0).Iterator()
+	iter := client.Scan(ctx, 0, prefix+"*", 0).Iterator()
 	for iter.Next(ctx) {
 		keysToDelete = append(keysToDelete, iter.Val())
 
 		// Jika sudah mencapai batchSize, hapus dengan UNLINK biar non-blocking
 		if len(keysToDelete) >= batchSize {
-			if err := r.client.Unlink(ctx, keysToDelete...).Err(); err != nil {
+			if err := client.Unlink(ctx, keysToDelete...).Err(); err != nil {
 				return err
 			}
 			keysToDelete = keysToDelete[:0]
@@ -118,7 +61,7 @@ func (r *RedisClient) DeleteKeysByPrefix(ctx context.Context, prefix string) err
 
 	// Hapus sisa key kalau ada
 	if len(keysToDelete) > 0 {
-		if err := r.client.Unlink(ctx, keysToDelete...).Err(); err != nil {
+		if err := client.Unlink(ctx, keysToDelete...).Err(); err != nil {
 			return err
 		}
 	}
@@ -126,29 +69,6 @@ func (r *RedisClient) DeleteKeysByPrefix(ctx context.Context, prefix string) err
 	if err := iter.Err(); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (r *RedisClient) Nil() error {
-	return redis.Nil
-}
-
-// Publish pesan ke channel Redis
-func (r *RedisClient) Publish(ctx context.Context, channel string, message any) error {
-	return r.client.Publish(ctx, channel, message).Err()
-}
-
-// Subscribe ke channel Redis
-func (r *RedisClient) Subscribe(ctx context.Context, channel string, handler func(string)) error {
-	sub := r.client.Subscribe(ctx, channel)
-	ch := sub.Channel()
-
-	go func() {
-		for msg := range ch {
-			handler(msg.Payload) // handler bisa unmarshal JSON dll
-		}
-	}()
 
 	return nil
 }
