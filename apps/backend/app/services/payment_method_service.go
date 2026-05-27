@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/dto"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
@@ -34,7 +35,7 @@ func (s *PaymentMethodService) GetActivePaymentMethods(
 
 	// 🧩 1. Cek cache dulu
 	if isCache {
-		if data, err := s.Redis.Get(ctx, config.Key(cacheKey)).Result(); err == nil && data != "" {
+		if data, err := s.Redis.Get(ctx, client.Key(cacheKey)).Result(); err == nil && data != "" {
 			var methods []dto.PaymentMethodDTO
 			if err := sonic.Unmarshal([]byte(data), &methods); err == nil {
 				// Cache hit 🎯
@@ -86,7 +87,7 @@ func (s *PaymentMethodService) GetActivePaymentMethods(
 	if isCache {
 		b, err := sonic.Marshal(grouped)
 		if err == nil {
-			if err := s.Redis.Set(ctx, config.Key(cacheKey), b, time.Duration(cacheTtl)*time.Second); err != nil {
+			if err := s.Redis.Set(ctx, client.Key(cacheKey), b, time.Duration(cacheTtl)*time.Second); err != nil {
 				// Log tapi jangan gagalkan request
 				fmt.Printf("Redis set error for key %s: %v\n", cacheKey, err)
 			}

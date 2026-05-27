@@ -25,6 +25,10 @@ Update this file after every meaningful implementation change.
 - Verified the backend with `go test ./...` after the HTTP client migration.
 - Migrated Telegram, Fonnte, and OAuth HTTP flows to the shared `Http()` helper.
 - Removed the Resty dependency from module usage with `go mod tidy`.
+- Wired Fiber `SharedState` to the existing Redis client via a Fiber `Storage` adapter.
+- Configured `SharedStorage` and `SharedStatePrefix` during app bootstrap.
+- Centralized DB, Redis, Fiber storage, and HTTP client construction under `app/client`.
+- Kept `utils.Http()` as a compatibility wrapper while the real HTTP client moved to `app/client`.
 
 ## In Progress
 

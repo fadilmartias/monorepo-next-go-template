@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/requests"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
@@ -349,7 +350,7 @@ func (ctrl *AuthController) SendEmailVerification(c fiber.Ctx) error {
 			Message: "Email sudah terverifikasi",
 		})
 	}
-	_, err := ctrl.Redis.Get(c.Context(), config.Key(fmt.Sprintf("email_verification_token:%s", user.Email))).Result()
+	_, err := ctrl.Redis.Get(c.Context(), client.Key(fmt.Sprintf("email_verification_token:%s", user.Email))).Result()
 	if err == nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusConflict,
@@ -361,7 +362,7 @@ func (ctrl *AuthController) SendEmailVerification(c fiber.Ctx) error {
 		"email": user.Email,
 	}, time.Minute*5)
 
-	if err := ctrl.Redis.Set(c.Context(), config.Key(fmt.Sprintf("email_verification_token:%s", user.Email)), jwtToken, time.Minute*5).Err(); err != nil {
+	if err := ctrl.Redis.Set(c.Context(), client.Key(fmt.Sprintf("email_verification_token:%s", user.Email)), jwtToken, time.Minute*5).Err(); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
 			Message: "Gagal menyimpan token verifikasi email",

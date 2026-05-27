@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/gofiber/fiber/v3/middleware/static"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/http/middleware"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	"github.com/coregx/coregex"
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/contrib/v3/monitor"
 	"github.com/gofiber/fiber/v3"
@@ -31,10 +33,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/pprof"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
-	glogger "gorm.io/gorm/logger"
-
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -50,10 +49,25 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 	}
 
 	// Create app
+	appConfig := config.LoadAppConfig()
+	redisStorageNamespace := appConfig.Name
+	if redisStorageNamespace == "" {
+		redisStorageNamespace = "backend"
+	}
+	redisStorage := client.NewFiberRedisStorage(nil, redisStorageNamespace)
+	redisClient, err := client.ConnectRedis()
+	if err != nil {
+		log.Fatalf("Could not connect to Redis: %v", err)
+	}
+	redisStorage.SetClient(redisClient)
+
 	app := fiber.New(fiber.Config{
-		AppName:     config.LoadAppConfig().Name,
-		JSONEncoder: sonic.Marshal,
-		JSONDecoder: sonic.Unmarshal,
+		AppName:           appConfig.Name,
+		SharedStorage:     redisStorage,
+		SharedStatePrefix: appConfig.Name + "-shared-",
+		JSONEncoder:       sonic.Marshal,
+		JSONDecoder:       sonic.Unmarshal,
+		RegexHandler:      coregex.MustCompile,
 		ErrorHandler: func(ctx fiber.Ctx, err error) error {
 			// Status code defaults to 500
 			code := fiber.StatusInternalServerError
@@ -89,21 +103,11 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 	}))
 
 	// DB connection
-	db, err := ConnectDB()
+	db, err := client.ConnectDB()
 	if err != nil {
 		log.Fatalf("Could not connect to database: %v", err)
 	}
-
-	// Redis connection
-	redisConfig := config.LoadRedisConfig()
-	redis := redis.NewClient(&redis.Options{
-		Addr:     redisConfig.Addr,
-		Password: redisConfig.Password,
-		DB:       redisConfig.DB,
-	})
-	if err := redis.Ping(context.Background()).Err(); err != nil {
-		log.Fatalf("Could not connect to Redis: %v", err)
-	}
+	redis := redisClient
 
 	// Subscribe di startup
 	pubSub := redis.Subscribe(context.Background(), "leaderboard-global")
@@ -156,48 +160,4 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 	routes.RegisterWebsocketRoutes(app)
 
 	return app, db, redis
-}
-
-func ConnectDB() (*gorm.DB, error) {
-	dbConfig := config.LoadDBConfig()
-	appConfig := config.LoadAppConfig()
-
-	// Format DSN untuk MySQL
-	// format: "user:password@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		dbConfig.User,
-		dbConfig.Password,
-		dbConfig.Host,
-		dbConfig.Port,
-		dbConfig.Name,
-	)
-
-	var gormLogger glogger.Interface
-	if appConfig.Env != "production" {
-		gormLogger = glogger.Default.LogMode(glogger.Info)
-	} else {
-		gormLogger = glogger.Default.LogMode(glogger.Error)
-	}
-
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: gormLogger,
-	})
-	if err != nil {
-		return nil, err
-	}
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
-	if appConfig.Env != "production" {
-		sqlDB.SetMaxIdleConns(5)  // cukup 5 idle
-		sqlDB.SetMaxOpenConns(10) // max 10 koneksi aktif
-		sqlDB.SetConnMaxLifetime(30 * time.Minute)
-	} else {
-		sqlDB.SetMaxIdleConns(20)           // simpan 20 koneksi siap pakai
-		sqlDB.SetMaxOpenConns(200)          // max 200 koneksi aktif
-		sqlDB.SetConnMaxLifetime(time.Hour) // recycle tiap 1 jam
-
-	}
-	return db, nil
 }

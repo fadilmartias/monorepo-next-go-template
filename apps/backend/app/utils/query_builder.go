@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
@@ -412,7 +412,7 @@ func FetchAndCacheDynamic(
 
 	// ================== 1. Coba Ambil dari Cache ==================
 	if cacheKey != "" {
-		cachedData, err := redisClient.Get(ctx, config.Key(cacheKey)).Result()
+		cachedData, err := redisClient.Get(ctx, client.Key(cacheKey)).Result()
 		if err == nil {
 			if isSingle {
 				result := reflect.New(responseType).Interface()

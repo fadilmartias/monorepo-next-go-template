@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/requests"
@@ -251,7 +252,7 @@ func (s *AuthService) Register2FA(email string) (string, string, error) {
 func (s *AuthService) VerifyUserTOTPSecret(email string, code string, isLogin bool) error {
 	var secret string
 	if !isLogin {
-		secretRedis, err := s.Redis.Get(context.Background(), config.Key(fmt.Sprintf("totp:%s", email))).Result()
+		secretRedis, err := s.Redis.Get(context.Background(), client.Key(fmt.Sprintf("totp:%s", email))).Result()
 		if err != nil {
 			return err
 		}
@@ -276,7 +277,7 @@ func (s *AuthService) VerifyUserTOTPSecret(email string, code string, isLogin bo
 		return errors.New("kode TOTP tidak valid")
 	}
 	// Hapus kunci TOTP dari Redis
-	if err := s.Redis.Del(context.Background(), config.Key(fmt.Sprintf("totp:%s", email))).Err(); err != nil {
+	if err := s.Redis.Del(context.Background(), client.Key(fmt.Sprintf("totp:%s", email))).Err(); err != nil {
 		return err
 	}
 	userDB, err := s.UserRepository.FindByEmail(email)
@@ -307,7 +308,7 @@ func (s *AuthService) SendOTP(ctx context.Context, targetType string, target str
 }
 
 func (s *AuthService) VerifyOTP(ctx context.Context, target string, subject string, otp string) error {
-	storedOtp, err := s.Redis.Get(ctx, config.Key(fmt.Sprintf("otp:%s:%s", subject, target))).Result()
+	storedOtp, err := s.Redis.Get(ctx, client.Key(fmt.Sprintf("otp:%s:%s", subject, target))).Result()
 	if err != nil {
 		return err
 	}

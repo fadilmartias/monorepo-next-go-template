@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/fadilmartias/dilz_code/apps/backend/config"
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -31,7 +31,7 @@ func Idempotency(redis *redis.Client) fiber.Handler {
 		}
 
 		ctx := c.Context()
-		cacheKey := config.Key("idem:" + key)
+		cacheKey := client.Key("idem:" + key)
 
 		// 🔹 Cek apakah sudah pernah disimpan
 		val, err := redis.Get(ctx, cacheKey).Result()

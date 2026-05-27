@@ -3,12 +3,12 @@ package seeders
 import (
 	"log"
 
-	"github.com/fadilmartias/dilz_code/apps/backend/bootstrap"
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 )
 
 // RunAllSeeders adalah entry point untuk menjalankan semua seeder.
 func RunAllSeeders() {
-	db, err := bootstrap.ConnectDB()
+	db, err := client.ConnectDB()
 	if err != nil {
 		panic(err)
 	}

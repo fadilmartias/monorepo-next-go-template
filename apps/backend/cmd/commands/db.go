@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
+	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
-	"github.com/fadilmartias/dilz_code/apps/backend/bootstrap"
 	"github.com/fadilmartias/dilz_code/apps/backend/database/migrations"
 	"github.com/fadilmartias/dilz_code/apps/backend/database/seeders"
 
@@ -21,7 +21,7 @@ var dbMigrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Run database migrations",
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := bootstrap.ConnectDB()
+		db, err := client.ConnectDB()
 		if err != nil {
 			panic(err)
 		}
@@ -47,7 +47,7 @@ var dbRollbackCmd = &cobra.Command{
 	Use:   "migrate:rollback",
 	Short: "Rollback the last database migration",
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := bootstrap.ConnectDB()
+		db, err := client.ConnectDB()
 		if err != nil {
 			panic(err)
 		}
@@ -71,7 +71,7 @@ var dbMigrateFreshCmd = &cobra.Command{
 	Use:   "migrate:fresh",
 	Short: "Drop all tables and re-run all migrations",
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := bootstrap.ConnectDB()
+		db, err := client.ConnectDB()
 		if err != nil {
 			panic(err)
 		}
@@ -111,7 +111,7 @@ var dbMigrateStatusCmd = &cobra.Command{
 	Use:   "migrate:status",
 	Short: "List all migrations and their status",
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := bootstrap.ConnectDB()
+		db, err := client.ConnectDB()
 		if err != nil {
 			panic(err)
 		}
