@@ -4,11 +4,11 @@ FROM golang:1.26.3-alpine AS builder
 WORKDIR /app
 
 # Copy go.mod dan go.sum terlebih dahulu untuk caching module
-COPY backend/go.mod backend/go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy seluruh source code
-COPY backend/ .
+COPY . .
 
 # Build aplikasi Go
 # Build Web Server
@@ -26,7 +26,7 @@ COPY --from=builder /app/server ./server
 COPY --from=builder /app/cli ./cli
 COPY --from=builder /app/public ./public
 
-# PERBAIKAN: Tidak perlu copy storage dari builder. 
+# PERBAIKAN: Tidak perlu copy storage dari builder.
 # Cukup buat struktur foldernya saja di sini agar tidak error saat start.
 # Nanti isinya akan diisi oleh volume dari docker-compose.
 RUN mkdir -p ./storage/logs ./storage/uploads/tmp ./storage/uploads/tinymce

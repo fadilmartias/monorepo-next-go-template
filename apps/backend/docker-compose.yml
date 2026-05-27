@@ -7,7 +7,11 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     env_file: .env
+    environment:
+      - DB_HOST=host.docker.internal
+      - REDIS_HOST=host.docker.internal
     restart: unless-stopped
     volumes:
-      # PERBAIKAN: Mapping folder lokal ke /app/storage di dalam container
       - ./storage:/app/storage
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

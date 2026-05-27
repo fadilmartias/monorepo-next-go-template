@@ -33,7 +33,7 @@ func main() {
 	// 3. Jalankan Fiber di dalam goroutine agar main thread tidak terblokir
 	go func() {
 		logger.Debugf("Starting Fiber server on port %s", appConfig.Port)
-		if err := app.Listen(appConfig.Port); err != nil {
+		if err := app.Listen(":" + appConfig.Port); err != nil {
 			logger.Errorf("Fiber server error: %v", err)
 		}
 	}()

@@ -45,7 +45,7 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		logger.Error("Could not load .env file")
+		logger.Debug("Could not load .env file")
 	}
 
 	// Create app
@@ -98,7 +98,7 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 		Stream: os.Stdout, // Tulis log ke stdout
 
 		// Format teks biasa (mudah dibaca) yang selaras dengan Zap
-		Format:     "[${time}] ${status} | ${latency} | ${method} ${path} | req_id:${locals:requestid} | error:${error}\n",
+		Format:     "[${time}] ${status} | ${latency} | ${method} ${path} | req_id: ${locals:requestid} | error: ${error}\n",
 		TimeFormat: "02/01/2006 15:04:05",
 	}))
 
