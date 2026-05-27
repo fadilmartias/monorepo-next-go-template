@@ -16,8 +16,8 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/graph"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 
-	"github.com/gofiber/fiber/v3"
 	"github.com/go-redis/redis/v8"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 

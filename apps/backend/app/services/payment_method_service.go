@@ -9,8 +9,8 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/dto"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/gofiber/fiber/v3"
 	"github.com/go-redis/redis/v8"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 

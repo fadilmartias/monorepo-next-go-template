@@ -19,6 +19,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/contrib/v3/monitor"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/compress"
@@ -30,7 +31,6 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/pprof"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
-	"github.com/go-redis/redis/v8"
 	glogger "gorm.io/gorm/logger"
 
 	"github.com/joho/godotenv"

@@ -6,8 +6,8 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/gofiber/fiber/v3"
 	"github.com/go-redis/redis/v8"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
 
