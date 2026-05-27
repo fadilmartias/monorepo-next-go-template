@@ -8,10 +8,14 @@ services:
       - "${APP_PORT}:${APP_PORT}"
     env_file: .env
     environment:
-      - DB_HOST=host.docker.internal
-      - REDIS_HOST=host.docker.internal
+      - DB_HOST=dilz_postgres
+      - REDIS_HOST=dilz_redis
     restart: unless-stopped
     volumes:
       - ./storage:/app/storage
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - dilz_network
+
+networks:
+  dilz_network:
+    external: true
