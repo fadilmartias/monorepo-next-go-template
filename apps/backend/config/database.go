@@ -6,6 +6,7 @@ import (
 )
 
 type DBConfig struct {
+	Driver   string
 	Host     string
 	Port     string
 	User     string
@@ -21,7 +22,11 @@ var (
 
 func LoadDBConfig() *DBConfig {
 	dbOnce.Do(func() {
+		if os.Getenv("DB_DRIVER") == "" {
+			os.Setenv("DB_DRIVER", "mysql")
+		}
 		dbConfig = &DBConfig{
+			Driver:   os.Getenv("DB_DRIVER"),
 			Host:     os.Getenv("DB_HOST"),
 			Port:     os.Getenv("DB_PORT"),
 			User:     os.Getenv("DB_USER"),

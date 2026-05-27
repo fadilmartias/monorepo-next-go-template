@@ -14,13 +14,29 @@ func ConnectDB() (*gorm.DB, error) {
 	dbConfig := config.LoadDBConfig()
 	appConfig := config.LoadAppConfig()
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		dbConfig.User,
-		dbConfig.Password,
-		dbConfig.Host,
-		dbConfig.Port,
-		dbConfig.Name,
-	)
+	var dsn string
+
+	switch dbConfig.Driver {
+	case "postgres":
+		dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+			dbConfig.Host,
+			dbConfig.Port,
+			dbConfig.User,
+			dbConfig.Password,
+			dbConfig.Name,
+			dbConfig.SSLMode,
+		)
+	case "mysql":
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			dbConfig.User,
+			dbConfig.Password,
+			dbConfig.Host,
+			dbConfig.Port,
+			dbConfig.Name,
+		)
+	default:
+		return nil, fmt.Errorf("unsupported database driver: %s", dbConfig.Driver)
+	}
 
 	var gormLogger glogger.Interface
 	if appConfig.Env != "production" {
