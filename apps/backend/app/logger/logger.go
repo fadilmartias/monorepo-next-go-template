@@ -2,6 +2,7 @@ package logger
 
 import (
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
@@ -21,14 +22,13 @@ func Init() {
 
 	FileWriter = &lumberjack.Logger{
 		Filename:   "./storage/logs/app.log",
-		MaxSize:    10, // 10 MB
+		MaxSize:    10,
 		MaxBackups: 30,
-		MaxAge:     30, // 30 hari
+		MaxAge:     30,
 		Compress:   true,
 		LocalTime:  true,
 	}
 
-	// 1. Konfigurasi Dasar Encoder (Format "Mudah Dibaca")
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "time",
 		LevelKey:       "level",
@@ -39,34 +39,39 @@ func Init() {
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	// 2. Setup Console Encoder (DENGAN WARNA)
 	consoleCfg := encoderConfig
-	consoleCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder // Warna aktif!
+	consoleCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	consoleEncoder := zapcore.NewConsoleEncoder(consoleCfg)
 
-	// 3. Setup File Encoder (TANPA WARNA - agar file bersih)
 	fileCfg := encoderConfig
-	fileCfg.EncodeLevel = zapcore.CapitalLevelEncoder // Tanpa warna!
-	fileEncoder := zapcore.NewConsoleEncoder(fileCfg) // Gunakan format Console (bukan JSON) agar mudah dibaca manusia
+	fileCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+	fileEncoder := zapcore.NewConsoleEncoder(fileCfg)
 
-	// Writers
+	// --- OPTIMASI ASYNC DI SINI ---
 	consoleWriter := zapcore.AddSync(os.Stdout)
-	fileZapWriter := zapcore.AddSync(FileWriter)
 
-	// 4. Aturan Level Log
-	// Console: Tampilkan semua log dari level Debug hingga Error
+	// Bungkus FileWriter dengan BufferedWriteSyncer
+	asyncFileWriter := &zapcore.BufferedWriteSyncer{
+		WS:            zapcore.AddSync(FileWriter),
+		Size:          256 * 1024,      // Buffer sebesar 256 KB di memori
+		FlushInterval: 2 * time.Second, // Tulis ke disk otomatis setiap 2 detik
+	}
+
 	consoleCore := zapcore.NewCore(consoleEncoder, consoleWriter, zapcore.DebugLevel)
 
-	// File: TAMPILKAN INFO, WARN, dan ERROR.
-	// (Kita pakai InfoLevel agar kamu bisa pilih manual log mana yang mau dimasukkan ke file)
-	fileCore := zapcore.NewCore(fileEncoder, fileZapWriter, zapcore.InfoLevel)
+	// Gunakan asyncFileWriter
+	fileCore := zapcore.NewCore(fileEncoder, asyncFileWriter, zapcore.ErrorLevel)
 
-	// Gabungkan
 	core := zapcore.NewTee(consoleCore, fileCore)
 
-	// AddStacktrace hanya akan print detail error saat benar-benar terjadi Error
 	baseLogger := zap.New(core, zap.AddStacktrace(zapcore.ErrorLevel))
 	log = baseLogger.Sugar()
+}
+
+func Sync() {
+	if log != nil {
+		_ = log.Sync()
+	}
 }
 
 // --- FUNGSI UNTUK MENGAMBIL REQUEST ID DARI FIBER ---
