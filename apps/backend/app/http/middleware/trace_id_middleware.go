@@ -5,16 +5,17 @@ import (
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/gofiber/fiber/v3"
-	"github.com/google/uuid"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
+	futils "github.com/gofiber/utils/v2"
 )
 
 func TraceIDMiddleware() fiber.Handler {
 	return func(c fiber.Ctx) error {
 
 		// Cek apakah client sudah kirim trace id
-		traceID := c.Get("X-Request-ID")
+		traceID := requestid.FromContext(c)
 		if traceID == "" {
-			traceID = uuid.New().String()
+			traceID = futils.SecureToken()
 		}
 
 		// Inject ke context

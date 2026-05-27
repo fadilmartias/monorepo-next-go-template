@@ -18,6 +18,7 @@ require (
 	github.com/gofiber/contrib/v3/monitor v1.0.6
 	github.com/gofiber/contrib/v3/websocket v1.1.5
 	github.com/gofiber/fiber/v3 v3.3.0
+	github.com/gofiber/utils/v2 v2.0.6
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/hibiken/asynq v0.25.1
@@ -80,7 +81,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.9.3 // indirect
 	github.com/gofiber/schema v1.7.1 // indirect
-	github.com/gofiber/utils/v2 v2.0.6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
