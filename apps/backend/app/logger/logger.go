@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -72,9 +73,8 @@ func Init() {
 // Gunakan ini di dalam handler/controller
 func Ctx(c fiber.Ctx) *zap.SugaredLogger {
 	// Fiber requestid middleware biasanya menyimpan ID di Locals("requestid")
-	reqID := c.Locals("requestid")
-	if reqID != nil {
-		// Inject request_id ke dalam log
+	reqID := requestid.FromContext(c)
+	if reqID != "" {
 		return log.With("req_id", reqID)
 	}
 	return log
