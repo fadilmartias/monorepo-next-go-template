@@ -1,6 +1,6 @@
 module github.com/fadilmartias/dilz_code/apps/backend
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/99designs/gqlgen v0.17.90
