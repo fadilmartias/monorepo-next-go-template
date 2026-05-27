@@ -12,7 +12,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils" // Ganti dengan path utils Anda
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +26,7 @@ func NewGenericController(db *gorm.DB, redis *config.RedisClient) *GenericContro
 }
 
 // Index menangani GET /:model
-func (ctrl *GenericController) Index(c *fiber.Ctx) error {
+func (ctrl *GenericController) Index(c fiber.Ctx) error {
 	modelName := c.Params("model")
 	modelInfo, err := registry.GetModel(modelName)
 	if err != nil {
@@ -55,7 +55,7 @@ func (ctrl *GenericController) Index(c *fiber.Ctx) error {
 	}
 
 	apiResponse, err := utils.FetchAndCacheDynamic(
-		c.UserContext(), ctrl.Redis, tx, params, cacheKey, 1*time.Minute, false,
+		c.Context(), ctrl.Redis, tx, params, cacheKey, 1*time.Minute, false,
 		modelInfo.Instance, modelInfo.NewSlice,
 	)
 
@@ -74,7 +74,7 @@ func (ctrl *GenericController) Index(c *fiber.Ctx) error {
 }
 
 // Show menangani GET /:model/:id
-func (ctrl *GenericController) Show(c *fiber.Ctx) error {
+func (ctrl *GenericController) Show(c fiber.Ctx) error {
 	modelName := c.Params("model")
 	id := c.Params("id")
 	modelInfo, err := registry.GetModel(modelName)
@@ -111,7 +111,7 @@ func (ctrl *GenericController) Show(c *fiber.Ctx) error {
 	}
 
 	apiResponse, err := utils.FetchAndCacheDynamic(
-		c.UserContext(), ctrl.Redis, tx, params, cacheKey, 5*time.Minute, true,
+		c.Context(), ctrl.Redis, tx, params, cacheKey, 5*time.Minute, true,
 		modelInfo.Instance, modelInfo.NewSlice,
 	)
 
@@ -135,7 +135,7 @@ func (ctrl *GenericController) Show(c *fiber.Ctx) error {
 	}
 }
 
-func (ctrl *GenericController) Store(c *fiber.Ctx) error {
+func (ctrl *GenericController) Store(c fiber.Ctx) error {
 	// 1. Dapatkan info model dari registry
 	modelName := c.Params("model")
 	modelInfo, err := registry.GetModel(modelName)
@@ -148,7 +148,7 @@ func (ctrl *GenericController) Store(c *fiber.Ctx) error {
 	newInstance := reflect.New(reflect.TypeOf(modelInfo.Instance).Elem()).Interface()
 
 	// 3. Parse request body JSON ke dalam instance baru tersebut
-	if err := c.BodyParser(newInstance); err != nil {
+	if err := c.Bind().Body(newInstance); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{Code: http.StatusBadRequest, Message: "Invalid request body"})
 	}
 
@@ -179,7 +179,7 @@ func (ctrl *GenericController) Store(c *fiber.Ctx) error {
 }
 
 // Update menangani PUT /:model/:id
-func (ctrl *GenericController) Update(c *fiber.Ctx) error {
+func (ctrl *GenericController) Update(c fiber.Ctx) error {
 	// 1. Dapatkan info model dan parameter
 	modelName := c.Params("model")
 	id := c.Params("id")
@@ -190,7 +190,7 @@ func (ctrl *GenericController) Update(c *fiber.Ctx) error {
 
 	// 2. Buat instance untuk menampung data update dari body
 	updateData := reflect.New(reflect.TypeOf(modelInfo.Instance).Elem()).Interface()
-	if err := c.BodyParser(updateData); err != nil {
+	if err := c.Bind().Body(updateData); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{Code: http.StatusBadRequest, Message: "Invalid request body"})
 	}
 
@@ -215,7 +215,7 @@ func (ctrl *GenericController) Update(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *GenericController) Patch(c *fiber.Ctx) error {
+func (ctrl *GenericController) Patch(c fiber.Ctx) error {
 	modelName := c.Params("model")
 	id := c.Params("id")
 	modelInfo, err := registry.GetModel(modelName)
@@ -224,7 +224,7 @@ func (ctrl *GenericController) Patch(c *fiber.Ctx) error {
 	}
 
 	updateMap := map[string]any{}
-	if err := c.BodyParser(&updateMap); err != nil {
+	if err := c.Bind().Body(&updateMap); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid request body",
@@ -249,7 +249,7 @@ func (ctrl *GenericController) Patch(c *fiber.Ctx) error {
 }
 
 // Destroy menangani DELETE /:model/:id
-func (ctrl *GenericController) Destroy(c *fiber.Ctx) error {
+func (ctrl *GenericController) Destroy(c fiber.Ctx) error {
 	// 1. Dapatkan info model dan parameter
 	modelName := c.Params("model")
 	id := c.Params("id")
@@ -275,3 +275,5 @@ func (ctrl *GenericController) Destroy(c *fiber.Ctx) error {
 		Message: "Data deleted successfully",
 	})
 }
+
+// fiber:context-methods migrated

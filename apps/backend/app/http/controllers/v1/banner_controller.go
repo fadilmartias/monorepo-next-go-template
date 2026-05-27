@@ -5,7 +5,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type BannerController struct {
@@ -16,8 +16,8 @@ func NewBannerController(bannerService *services.BannerService) *BannerControlle
 	return &BannerController{BannerService: bannerService}
 }
 
-func (ctrl *BannerController) Index(c *fiber.Ctx) error {
-	limit := c.QueryInt("limit", 10)
+func (ctrl *BannerController) Index(c fiber.Ctx) error {
+	limit := fiber.Query[int](c, "limit", 10)
 	banners, err := ctrl.BannerService.GetActiveAndValidBanners(limit)
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -31,9 +31,9 @@ func (ctrl *BannerController) Index(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *BannerController) Process(c *fiber.Ctx) error {
+func (ctrl *BannerController) Process(c fiber.Ctx) error {
 	banner := models.Banner{}
-	if err := c.BodyParser(&banner); err != nil {
+	if err := c.Bind().Body(&banner); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusBadRequest,
 			Message: "Gagal memproses data banner",

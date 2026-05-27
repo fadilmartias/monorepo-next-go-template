@@ -5,7 +5,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
@@ -19,14 +19,14 @@ func NewSettingController(db *gorm.DB, redis *config.RedisClient) *SettingContro
 	return &SettingController{DB: db, Redis: redis}
 }
 
-func (ctrl *SettingController) Index(c *fiber.Ctx) error {
+func (ctrl *SettingController) Index(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil mendapatkan data setting",
 		Data:    nil,
 	})
 }
 
-func (ctrl *SettingController) Show(c *fiber.Ctx) error {
+func (ctrl *SettingController) Show(c fiber.Ctx) error {
 	key := c.Params("key")
 	setting := models.Setting{}
 	if err := ctrl.DB.Where("`key` = ?", key).First(&setting).Error; err != nil {
@@ -41,21 +41,21 @@ func (ctrl *SettingController) Show(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *SettingController) Store(c *fiber.Ctx) error {
+func (ctrl *SettingController) Store(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil menambahkan setting",
 		Data:    nil,
 	})
 }
 
-func (ctrl *SettingController) Update(c *fiber.Ctx) error {
+func (ctrl *SettingController) Update(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil mengupdate setting",
 		Data:    nil,
 	})
 }
 
-func (ctrl *SettingController) Destroy(c *fiber.Ctx) error {
+func (ctrl *SettingController) Destroy(c fiber.Ctx) error {
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil menghapus setting",
 		Data:    nil,

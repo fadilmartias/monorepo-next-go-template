@@ -8,9 +8,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/gofiber/fiber/v3/middleware/static"
+
 	"github.com/fadilmartias/dilz_code/apps/backend/app/http/middleware"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/logger"
-	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 	"github.com/fadilmartias/dilz_code/apps/backend/cronjob"
@@ -18,16 +19,16 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/healthcheck"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
-	fLogger "github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/monitor"
-	"github.com/gofiber/fiber/v2/middleware/pprof"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/contrib/v3/monitor"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/compress"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/healthcheck"
+	"github.com/gofiber/fiber/v3/middleware/helmet"
+	fLogger "github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/pprof"
+	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 	glogger "gorm.io/gorm/logger"
 
 	"github.com/joho/godotenv"
@@ -51,7 +52,7 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 		AppName:     config.LoadAppConfig().Name,
 		JSONEncoder: sonic.Marshal,
 		JSONDecoder: sonic.Unmarshal,
-		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+		ErrorHandler: func(ctx fiber.Ctx, err error) error {
 			// Status code defaults to 500
 			code := fiber.StatusInternalServerError
 
@@ -101,23 +102,28 @@ func NewApp() (*fiber.App, *gorm.DB, *config.RedisClient) {
 		CrossOriginResourcePolicy: "cross-origin",
 	}))
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     os.Getenv("FE_URL"),
-		AllowMethods:     "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-		AllowHeaders:     "Origin, Content-Type, Authorization, Accept, X-Forwarded-For, X-Signature, X-Timestamp, X-Tenant-Id, X-Dev-Key, X-Idempotency-Key",
+		// AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{os.Getenv("FE_URL")},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept", "X-Forwarded-For", "X-Signature", "X-Timestamp", "X-Tenant-Id", "X-Dev-Key", "X-Idempotency-Key"},
 		AllowCredentials: true,
-		ExposeHeaders:    "Set-Cookie",
+		ExposeHeaders:    []string{"Set-Cookie"},
 	}))
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed, // 1
 	}))
 	app.Use(pprof.New(pprof.Config{
-		Next: func(c *fiber.Ctx) bool {
+		Next: func(c fiber.Ctx) bool {
 			return config.LoadAppConfig().Env != "production"
 		},
 	}))
-	app.Use(healthcheck.New())
+	app.Get(healthcheck.LivenessEndpoint, healthcheck.New())
 	app.Use(requestid.New())
-	app.Static("/", "./public") // Static file
+	app.Get("/*", static.New("./public")) // Static file
+	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
+	app.Get(healthcheck.ReadinessEndpoint, healthcheck.New())
+	app.Use(requestid.New())
+	app.Get("/*", static.New("./public")) // Static file
 	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
 	cronjob.StartCronJob(db, redis)
 
@@ -170,15 +176,4 @@ func ConnectDB() *gorm.DB {
 
 	}
 	return db
-}
-
-// MigrateDB menjalankan GORM AutoMigrate
-func MigrateDB() {
-	db := ConnectDB()
-	log.Println("Running database migrations...")
-	err := db.AutoMigrate(&models.User{})
-	if err != nil {
-		log.Fatalf("Could not migrate database: %v", err)
-	}
-	log.Println("Database migration completed successfully.")
 }

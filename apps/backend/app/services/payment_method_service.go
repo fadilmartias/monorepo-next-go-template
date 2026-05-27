@@ -9,7 +9,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/dto"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/repositories"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
@@ -24,12 +24,12 @@ func NewPaymentMethodService(db *gorm.DB, redis *config.RedisClient, paymentMeth
 }
 
 func (s *PaymentMethodService) GetActivePaymentMethods(
-	c *fiber.Ctx,
+	c fiber.Ctx,
 	isCache bool,
 	cacheTtl int,
 	cacheKey string,
 ) ([]dto.PaymentMethodDTO, error) {
-	ctx := c.UserContext()
+	ctx := c.Context()
 
 	// 🧩 1. Cek cache dulu
 	if isCache {
@@ -96,3 +96,5 @@ func (s *PaymentMethodService) GetActivePaymentMethods(
 
 	return grouped, nil
 }
+
+// fiber:context-methods migrated

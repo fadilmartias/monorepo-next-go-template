@@ -5,7 +5,7 @@ import (
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 var validate = validator.New()
@@ -54,10 +54,10 @@ func indexComma(s string) int {
 }
 
 func Validator[T any]() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		var body T
 
-		if err := c.BodyParser(&body); err != nil {
+		if err := c.Bind().Body(&body); err != nil {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:      fiber.StatusBadRequest,
 				Message:   "Data yang diberikan tidak valid",

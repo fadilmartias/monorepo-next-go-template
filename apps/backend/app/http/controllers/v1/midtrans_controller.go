@@ -11,7 +11,7 @@ package controllers_v1
 // 	"github.com/go-resty/resty/v2"
 // 	"github.com/golang-jwt/jwt"
 
-// 	"github.com/gofiber/fiber/v2"
+// 	"github.com/gofiber/fiber/v3"
 // 	"gorm.io/gorm"
 // )
 
@@ -26,7 +26,7 @@ package controllers_v1
 // 	return &MidtransController{DB: db, Redis: redis, MidtransService: midtransService}
 // }
 
-// func (ctrl *MidtransController) RenderQrGopay(c *fiber.Ctx) error {
+// func (ctrl *MidtransController) RenderQrGopay(c fiber.Ctx) error {
 // 	id := c.Params("id")
 // 	authHeader := utils.MidtransBasicAuth()
 // 	url := fmt.Sprintf("https://api.midtrans.com/v2/gopay/%s/qr-code", id)
@@ -60,7 +60,7 @@ package controllers_v1
 // 	return c.SendStream(resp.RawBody())
 // }
 
-// func (ctrl *MidtransController) Balance(c *fiber.Ctx) error {
+// func (ctrl *MidtransController) Balance(c fiber.Ctx) error {
 // 	balance, err := ctrl.MidtransService.GetBalance()
 // 	if err != nil {
 // 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -74,13 +74,13 @@ package controllers_v1
 // 	})
 // }
 
-// func (ctrl *MidtransController) RefundTransaction(c *fiber.Ctx) error {
+// func (ctrl *MidtransController) RefundTransaction(c fiber.Ctx) error {
 // 	reference_id := c.Params("reference_id")
 // 	var input struct {
 // 		Amount int    `json:"amount"`
 // 		Reason string `json:"reason"`
 // 	}
-// 	if err := c.BodyParser(&input); err != nil {
+// 	if err := c.Bind().Body(&input); err != nil {
 // 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 // 			Code:    fiber.StatusBadRequest,
 // 			Message: "Invalid request body",
@@ -101,7 +101,7 @@ package controllers_v1
 // 	})
 // }
 
-// func (ctrl *MidtransController) Webhook(c *fiber.Ctx) error {
+// func (ctrl *MidtransController) Webhook(c fiber.Ctx) error {
 // 	userData := c.Locals("user")
 // 	role := ""
 // 	if userData != nil {
@@ -120,7 +120,7 @@ package controllers_v1
 // 	logger.Infof("Midtrans webhook received: %s", c.Request().Body)
 
 // 	var input requests.MidtransWebhookRequestAttributes
-// 	if err := c.BodyParser(&input); err != nil {
+// 	if err := c.Bind().Body(&input); err != nil {
 // 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 // 			Code:    fiber.StatusBadRequest,
 // 			Message: "Gagal update status transaksi",

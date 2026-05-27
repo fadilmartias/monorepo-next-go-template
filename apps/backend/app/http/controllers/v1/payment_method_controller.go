@@ -4,7 +4,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type PaymentMethodController struct {
@@ -37,9 +37,9 @@ type PaymentMethodDTO struct {
 	CategoryName      string  `json:"category_name"`
 }
 
-func (ctrl *PaymentMethodController) Index(c *fiber.Ctx) error {
-	isCache := c.QueryBool("cache", false)
-	cacheTtl := c.QueryInt("cache_ttl", 60*60*24)
+func (ctrl *PaymentMethodController) Index(c fiber.Ctx) error {
+	isCache := fiber.Query[bool](c, "cache", false)
+	cacheTtl := fiber.Query[int](c, "cache_ttl", 60*60*24)
 	cacheKey := c.Query("cache_key", "active-payment-methods")
 	data, err := ctrl.PaymentMethodService.GetActivePaymentMethods(c, isCache, cacheTtl, cacheKey)
 	if err != nil {

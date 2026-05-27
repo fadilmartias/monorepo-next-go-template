@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/bytedance/sonic"
-	"github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/contrib/v3/websocket"
 )
 
 var Clients = make(map[string][]*websocket.Conn)

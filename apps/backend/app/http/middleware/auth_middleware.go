@@ -5,12 +5,12 @@ import (
 	"errors"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt"
 )
 
 func Auth(allowedRoles []string, allowedPermissions []string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		userClaims := c.Locals("user")
 		if userClaims == nil {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{

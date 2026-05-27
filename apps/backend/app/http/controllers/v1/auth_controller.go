@@ -18,7 +18,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/tidwall/gjson"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm" // TAMBAHKAN IMPORT INI
 )
 
@@ -41,9 +41,9 @@ type ValidateRecaptchaInput struct {
 	Action string `json:"action"`
 }
 
-func (ctrl *AuthController) VerifyRecaptcha(c *fiber.Ctx) error {
+func (ctrl *AuthController) VerifyRecaptcha(c fiber.Ctx) error {
 	var input ValidateRecaptchaInput
-	if err := c.BodyParser(&input); err != nil {
+	if err := c.Bind().Body(&input); err != nil {
 		return err
 	}
 	if input.Token == "" || input.Action == "" {
@@ -67,7 +67,7 @@ func (ctrl *AuthController) VerifyRecaptcha(c *fiber.Ctx) error {
 
 }
 
-func (ctrl *AuthController) Me(c *fiber.Ctx) error {
+func (ctrl *AuthController) Me(c fiber.Ctx) error {
 	user, ok := c.Locals("user").(jwt.MapClaims)
 	if !ok {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -91,7 +91,7 @@ func (ctrl *AuthController) Me(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
+func (ctrl *AuthController) Logout(c fiber.Ctx) error {
 	user, ok := c.Locals("user").(jwt.MapClaims)
 	if !ok {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -126,7 +126,7 @@ func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
 }
 
 // Register membuat user baru
-func (ctrl *AuthController) Register(c *fiber.Ctx) error {
+func (ctrl *AuthController) Register(c fiber.Ctx) error {
 	input, err := utils.GetValidatedBody[requests.RegisterInput](c)
 	if err != nil {
 		return err
@@ -146,9 +146,9 @@ func (ctrl *AuthController) Register(c *fiber.Ctx) error {
 }
 
 // Login placeholder
-func (ctrl *AuthController) Login(c *fiber.Ctx) error {
+func (ctrl *AuthController) Login(c fiber.Ctx) error {
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 
 	// Parse input dari body
 	input, err := utils.GetValidatedBody[requests.LoginInput](c)
@@ -199,12 +199,12 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) Login2FA(c *fiber.Ctx) error {
+func (ctrl *AuthController) Login2FA(c fiber.Ctx) error {
 	input, err := utils.GetValidatedBody[requests.Login2FARequest](c)
 	if err != nil {
 		return err
 	}
-	ctx := c.UserContext()
+	ctx := c.Context()
 	user, accessToken, refreshToken, err := ctrl.AuthService.Login2FA(ctx, input.TempToken, input.Code, true)
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -235,7 +235,7 @@ func (ctrl *AuthController) Login2FA(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) ForgotPassword(c *fiber.Ctx) error {
+func (ctrl *AuthController) ForgotPassword(c fiber.Ctx) error {
 	input, err := utils.GetValidatedBody[requests.ForgotPasswordInput](c)
 	if err != nil {
 		return err
@@ -284,7 +284,7 @@ func (ctrl *AuthController) ForgotPassword(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) ResetPassword(c *fiber.Ctx) error {
+func (ctrl *AuthController) ResetPassword(c fiber.Ctx) error {
 	input, err := utils.GetValidatedBody[requests.ResetPasswordInput](c)
 	if err != nil {
 		return err
@@ -333,7 +333,7 @@ func (ctrl *AuthController) ResetPassword(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) SendEmailVerification(c *fiber.Ctx) error {
+func (ctrl *AuthController) SendEmailVerification(c fiber.Ctx) error {
 	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
 	var user models.User
 	if err := ctrl.DB.Where("id = ?", id).First(&user).Error; err != nil {
@@ -349,7 +349,7 @@ func (ctrl *AuthController) SendEmailVerification(c *fiber.Ctx) error {
 			Message: "Email sudah terverifikasi",
 		})
 	}
-	_, err := ctrl.Redis.Get(c.UserContext(), fmt.Sprintf("email_verification_token:%s", user.Email))
+	_, err := ctrl.Redis.Get(c.Context(), fmt.Sprintf("email_verification_token:%s", user.Email))
 	if err == nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusConflict,
@@ -361,7 +361,7 @@ func (ctrl *AuthController) SendEmailVerification(c *fiber.Ctx) error {
 		"email": user.Email,
 	}, time.Minute*5)
 
-	if err := ctrl.Redis.Set(c.UserContext(), fmt.Sprintf("email_verification_token:%s", user.Email), jwtToken, time.Minute*5); err != nil {
+	if err := ctrl.Redis.Set(c.Context(), fmt.Sprintf("email_verification_token:%s", user.Email), jwtToken, time.Minute*5); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
 			Message: "Gagal menyimpan token verifikasi email",
@@ -381,7 +381,7 @@ func (ctrl *AuthController) SendEmailVerification(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) VerifyEmail(c *fiber.Ctx) error {
+func (ctrl *AuthController) VerifyEmail(c fiber.Ctx) error {
 	input, err := utils.GetValidatedBody[requests.VerifyEmailInput](c)
 	if err != nil {
 		return err
@@ -431,7 +431,7 @@ func (ctrl *AuthController) VerifyEmail(c *fiber.Ctx) error {
 }
 
 // RefreshToken mengembalikan token yang baru
-func (ctrl *AuthController) RefreshAccessToken(c *fiber.Ctx) error {
+func (ctrl *AuthController) RefreshAccessToken(c fiber.Ctx) error {
 	token := c.Cookies("refresh_token_" + os.Getenv("APP_ENV"))
 	if token == "" {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -500,17 +500,17 @@ func (ctrl *AuthController) RefreshAccessToken(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) GoogleRedirect(c *fiber.Ctx) error {
+func (ctrl *AuthController) GoogleRedirect(c fiber.Ctx) error {
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	redirectURI := os.Getenv("APP_URL") + "/v1/auth/google/callback"
 	authURL := fmt.Sprintf(
 		"https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=email profile",
 		clientID, redirectURI,
 	)
-	return c.Redirect(authURL)
+	return c.Redirect().To(authURL)
 }
 
-func (ctrl *AuthController) GoogleCallback(c *fiber.Ctx) error {
+func (ctrl *AuthController) GoogleCallback(c fiber.Ctx) error {
 	code := c.Query("code")
 	if code == "" {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -561,7 +561,7 @@ func (ctrl *AuthController) GoogleCallback(c *fiber.Ctx) error {
 	name := gjson.GetBytes(userResp.Body(), "name").String()
 	id := gjson.GetBytes(userResp.Body(), "id").String()
 
-	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.UserContext(), "google", id, email, name)
+	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.Context(), "google", id, email, name)
 
 	// if isRegister {
 	// 	return c.Redirect(os.Getenv("FE_URL") + "/onboarding/" + user.ID)
@@ -569,23 +569,23 @@ func (ctrl *AuthController) GoogleCallback(c *fiber.Ctx) error {
 
 	// Cek kalau butuh 2FA
 	if errors.Is(err, services.Err2FARequired) {
-		return c.Redirect(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
 	}
 
 	// Cek error lain
 	if err != nil {
-		return c.Redirect(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
 	}
 
 	ctrl.setCookie(c, accessToken, refreshToken)
 	if user.Role == "admin" {
-		return c.Redirect(os.Getenv("FE_URL") + "/admin/dashboard")
+		return c.Redirect().To(os.Getenv("FE_URL") + "/admin/dashboard")
 	}
 	// Redirect ke FE
-	return c.Redirect(os.Getenv("FE_URL"))
+	return c.Redirect().To(os.Getenv("FE_URL"))
 }
 
-func (ctrl *AuthController) DiscordRedirect(c *fiber.Ctx) error {
+func (ctrl *AuthController) DiscordRedirect(c fiber.Ctx) error {
 	discordConfig := config.LoadDiscordConfig()
 	clientID := discordConfig.ClientID
 	redirectURI := os.Getenv("APP_URL") + "/v1/auth/discord/callback"
@@ -593,11 +593,11 @@ func (ctrl *AuthController) DiscordRedirect(c *fiber.Ctx) error {
 		"https://discord.com/api/oauth2/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=identify+email",
 		clientID, redirectURI,
 	)
-	return c.Redirect(authURL)
+	return c.Redirect().To(authURL)
 }
 
 // Callback endpoint
-func (ctrl *AuthController) DiscordCallback(c *fiber.Ctx) error {
+func (ctrl *AuthController) DiscordCallback(c fiber.Ctx) error {
 	discordConfig := config.LoadDiscordConfig()
 	appConfig := config.LoadAppConfig()
 	code := c.Query("code")
@@ -648,7 +648,7 @@ func (ctrl *AuthController) DiscordCallback(c *fiber.Ctx) error {
 	email := gjson.GetBytes(userResp.Body(), "email").String()
 	// avatar := gjson.GetBytes(userResp.Body(), "avatar").String()
 
-	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.UserContext(), "discord", discordID, email, username)
+	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.Context(), "discord", discordID, email, username)
 
 	// if isRegister {
 	// 	return c.Redirect(os.Getenv("FE_URL") + "/onboarding/" + user.ID)
@@ -656,27 +656,27 @@ func (ctrl *AuthController) DiscordCallback(c *fiber.Ctx) error {
 
 	// Cek kalau butuh 2FA
 	if errors.Is(err, services.Err2FARequired) {
-		return c.Redirect(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
 	}
 
 	// Cek error lain
 	if err != nil {
-		return c.Redirect(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
 	}
 	ctrl.setCookie(c, accessToken, refreshToken)
 	if user.Role == "admin" {
-		return c.Redirect(os.Getenv("FE_URL") + "/admin/dashboard")
+		return c.Redirect().To(os.Getenv("FE_URL") + "/admin/dashboard")
 	}
 	// Redirect ke FE
-	return c.Redirect(os.Getenv("FE_URL"))
+	return c.Redirect().To(os.Getenv("FE_URL"))
 
 }
 
-func (ctrl *AuthController) GoogleOneTap(c *fiber.Ctx) error {
+func (ctrl *AuthController) GoogleOneTap(c fiber.Ctx) error {
 	var body struct {
 		Credential string `json:"credential"`
 	}
-	if err := c.BodyParser(&body); err != nil {
+	if err := c.Bind().Body(&body); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusBadRequest,
 			Message: "Invalid request",
@@ -717,7 +717,7 @@ func (ctrl *AuthController) GoogleOneTap(c *fiber.Ctx) error {
 		}, err)
 	}
 
-	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.UserContext(), "google", id, email, name)
+	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.Context(), "google", id, email, name)
 
 	// if isRegister {
 	// 	return c.Redirect(os.Getenv("FE_URL") + "/onboarding/" + user.ID)
@@ -750,7 +750,7 @@ func (ctrl *AuthController) GoogleOneTap(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) FacebookRedirect(c *fiber.Ctx) error {
+func (ctrl *AuthController) FacebookRedirect(c fiber.Ctx) error {
 	facebookConfig := config.LoadFacebookConfig()
 	appConfig := config.LoadAppConfig()
 	redirectURI := appConfig.BaseURL + "/v1/auth/facebook/callback"
@@ -758,10 +758,10 @@ func (ctrl *AuthController) FacebookRedirect(c *fiber.Ctx) error {
 		"https://www.facebook.com/v23.0/dialog/oauth?client_id=%s&redirect_uri=%s&scope=email,public_profile&response_type=code&state=%s",
 		facebookConfig.ClientID, url.QueryEscape(redirectURI), "randomstate",
 	)
-	return c.Redirect(authURL)
+	return c.Redirect().To(authURL)
 }
 
-func (ctrl *AuthController) FacebookCallback(c *fiber.Ctx) error {
+func (ctrl *AuthController) FacebookCallback(c fiber.Ctx) error {
 	code := c.Query("code")
 	if code == "" {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -832,7 +832,7 @@ func (ctrl *AuthController) FacebookCallback(c *fiber.Ctx) error {
 	}
 
 	// 3. Simpan / update user di DB
-	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.UserContext(), "facebook", id, email, name)
+	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.Context(), "facebook", id, email, name)
 
 	// if isRegister {
 	// 	return c.Redirect(os.Getenv("FE_URL") + "/onboarding/" + user.ID)
@@ -840,32 +840,32 @@ func (ctrl *AuthController) FacebookCallback(c *fiber.Ctx) error {
 
 	// Cek kalau butuh 2FA
 	if errors.Is(err, services.Err2FARequired) {
-		return c.Redirect(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
 	}
 
 	// Cek error lain
 	if err != nil {
-		return c.Redirect(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
 	}
 	ctrl.setCookie(c, accessToken, refreshToken)
 	if user.Role == "admin" {
-		return c.Redirect(os.Getenv("FE_URL") + "/admin/dashboard")
+		return c.Redirect().To(os.Getenv("FE_URL") + "/admin/dashboard")
 	}
 
-	return c.Redirect(os.Getenv("FE_URL"))
+	return c.Redirect().To(os.Getenv("FE_URL"))
 }
 
-func (ctrl *AuthController) SteamRedirect(c *fiber.Ctx) error {
+func (ctrl *AuthController) SteamRedirect(c fiber.Ctx) error {
 	appConfig := config.LoadAppConfig()
 	redirectURI := appConfig.BaseURL + "/v1/auth/steam/callback"
 	authURL := fmt.Sprintf(
 		"https://steamcommunity.com/openid/login?openid.return_to=%s&openid.realm=%s",
 		url.QueryEscape(redirectURI), url.QueryEscape(appConfig.BaseURL),
 	)
-	return c.Redirect(authURL)
+	return c.Redirect().To(authURL)
 }
 
-func (ctrl *AuthController) SteamCallback(c *fiber.Ctx) error {
+func (ctrl *AuthController) SteamCallback(c fiber.Ctx) error {
 	// 1. Kirim balik semua param openid ke Steam untuk verifikasi
 	form := url.Values{}
 	for k, v := range c.Queries() {
@@ -921,7 +921,7 @@ func (ctrl *AuthController) SteamCallback(c *fiber.Ctx) error {
 	}
 
 	// 4. Simpan / update user via handleUserOAuth
-	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.UserContext(), "steam", steamID, "", name)
+	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.Context(), "steam", steamID, "", name)
 
 	// if isRegister {
 	// 	return c.Redirect(os.Getenv("FE_URL") + "/onboarding/" + user.ID)
@@ -929,21 +929,21 @@ func (ctrl *AuthController) SteamCallback(c *fiber.Ctx) error {
 
 	// Cek kalau butuh 2FA
 	if errors.Is(err, services.Err2FARequired) {
-		return c.Redirect(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
 	}
 
 	// Cek error lain
 	if err != nil {
-		return c.Redirect(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
 	}
 	ctrl.setCookie(c, accessToken, refreshToken)
 	if user.Role == "admin" {
-		return c.Redirect(os.Getenv("FE_URL") + "/admin/dashboard")
+		return c.Redirect().To(os.Getenv("FE_URL") + "/admin/dashboard")
 	}
-	return c.Redirect(os.Getenv("FE_URL"))
+	return c.Redirect().To(os.Getenv("FE_URL"))
 }
 
-func (ctrl *AuthController) TwitchRedirect(c *fiber.Ctx) error {
+func (ctrl *AuthController) TwitchRedirect(c fiber.Ctx) error {
 	twitchConfig := config.LoadTwitchConfig()
 	appConfig := config.LoadAppConfig()
 
@@ -955,10 +955,10 @@ func (ctrl *AuthController) TwitchRedirect(c *fiber.Ctx) error {
 		clientID, url.QueryEscape(redirectURI),
 	)
 
-	return c.Redirect(authURL)
+	return c.Redirect().To(authURL)
 }
 
-func (ctrl *AuthController) TwitchCallback(c *fiber.Ctx) error {
+func (ctrl *AuthController) TwitchCallback(c fiber.Ctx) error {
 	code := c.Query("code")
 	if code == "" {
 		return c.Status(400).SendString("missing code")
@@ -1038,7 +1038,7 @@ func (ctrl *AuthController) TwitchCallback(c *fiber.Ctx) error {
 	}
 
 	// 3. Integrasi ke sistem
-	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.UserContext(), "twitch", id, email, name)
+	user, accessToken, refreshToken, tempToken, _, err := ctrl.AuthService.HandleOAuth(c.Context(), "twitch", id, email, name)
 
 	// if isRegister {
 	// 	return c.Redirect(os.Getenv("FE_URL") + "/onboarding/" + user.ID)
@@ -1046,21 +1046,21 @@ func (ctrl *AuthController) TwitchCallback(c *fiber.Ctx) error {
 
 	// Cek kalau butuh 2FA
 	if errors.Is(err, services.Err2FARequired) {
-		return c.Redirect(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login/2fa/" + tempToken)
 	}
 
 	// Cek error lain
 	if err != nil {
-		return c.Redirect(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
+		return c.Redirect().To(os.Getenv("FE_URL") + "/login?error=" + url.QueryEscape(err.Error()))
 	}
 	ctrl.setCookie(c, accessToken, refreshToken)
 	if user.Role == "admin" {
-		return c.Redirect(os.Getenv("FE_URL") + "/admin/dashboard")
+		return c.Redirect().To(os.Getenv("FE_URL") + "/admin/dashboard")
 	}
-	return c.Redirect(os.Getenv("FE_URL"))
+	return c.Redirect().To(os.Getenv("FE_URL"))
 }
 
-func (ctrl *AuthController) Register2FA(c *fiber.Ctx) error {
+func (ctrl *AuthController) Register2FA(c fiber.Ctx) error {
 
 	user := c.Locals("user").(jwt.MapClaims)
 
@@ -1090,7 +1090,7 @@ func (ctrl *AuthController) Register2FA(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) Verify2FA(c *fiber.Ctx) error {
+func (ctrl *AuthController) Verify2FA(c fiber.Ctx) error {
 	user := c.Locals("user").(jwt.MapClaims)
 
 	input, err := utils.GetValidatedBody[requests.Verify2FARequest](c)
@@ -1123,7 +1123,7 @@ func (ctrl *AuthController) Verify2FA(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) Disable2FA(c *fiber.Ctx) error {
+func (ctrl *AuthController) Disable2FA(c fiber.Ctx) error {
 	user := c.Locals("user").(jwt.MapClaims)
 	if err := ctrl.AuthService.Disable2FA(user["id"].(string)); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -1136,7 +1136,7 @@ func (ctrl *AuthController) Disable2FA(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) SendOTP(c *fiber.Ctx) error {
+func (ctrl *AuthController) SendOTP(c fiber.Ctx) error {
 	user := c.Locals("user")
 	input, err := utils.GetValidatedBody[requests.SendOTPRequest](c)
 	if err != nil {
@@ -1167,7 +1167,7 @@ func (ctrl *AuthController) SendOTP(c *fiber.Ctx) error {
 		}, nil)
 	}
 
-	if err := ctrl.AuthService.SendOTP(c.UserContext(), input.TargetType, target, input.Subject, userName); err != nil {
+	if err := ctrl.AuthService.SendOTP(c.Context(), input.TargetType, target, input.Subject, userName); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
 			Message: "Gagal mengirim OTP",
@@ -1178,7 +1178,7 @@ func (ctrl *AuthController) SendOTP(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) VerifyOTP(c *fiber.Ctx) error {
+func (ctrl *AuthController) VerifyOTP(c fiber.Ctx) error {
 	user := c.Locals("user")
 	input, err := utils.GetValidatedBody[requests.VerifyOTPRequest](c)
 	if err != nil {
@@ -1204,7 +1204,7 @@ func (ctrl *AuthController) VerifyOTP(c *fiber.Ctx) error {
 		}, nil)
 	}
 
-	if err := ctrl.AuthService.VerifyOTP(c.UserContext(), target, input.Subject, input.Otp); err != nil {
+	if err := ctrl.AuthService.VerifyOTP(c.Context(), target, input.Subject, input.Otp); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusNotFound,
 			Message: "Kode OTP tidak valid",
@@ -1215,7 +1215,7 @@ func (ctrl *AuthController) VerifyOTP(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *AuthController) setCookie(c *fiber.Ctx, accessToken string, refreshToken string) {
+func (ctrl *AuthController) setCookie(c fiber.Ctx, accessToken string, refreshToken string) {
 	accessCookie := fiber.Cookie{
 		Name:     "access_token_" + os.Getenv("APP_ENV"),
 		Value:    accessToken,
@@ -1239,7 +1239,7 @@ func (ctrl *AuthController) setCookie(c *fiber.Ctx, accessToken string, refreshT
 	c.Cookie(&refreshCookie)
 }
 
-func (ctrl *AuthController) clearCookie(c *fiber.Ctx) {
+func (ctrl *AuthController) clearCookie(c fiber.Ctx) {
 	// Hapus access_token
 	c.Cookie(&fiber.Cookie{
 		Name:     "access_token_" + os.Getenv("APP_ENV"),
@@ -1262,3 +1262,5 @@ func (ctrl *AuthController) clearCookie(c *fiber.Ctx) {
 		Secure:   true,
 	})
 }
+
+// fiber:context-methods migrated

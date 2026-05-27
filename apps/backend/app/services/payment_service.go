@@ -12,7 +12,7 @@ package services
 // 	"github.com/fadilmartias/dilz_code/apps/backend/app/usecases"
 // 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 // 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-// 	"github.com/gofiber/fiber/v2"
+// 	"github.com/gofiber/fiber/v3"
 // 	"gorm.io/gorm"
 // )
 

@@ -16,7 +16,7 @@ import (
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/logger"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 var excludedSignatureRoutes = []string{
@@ -39,7 +39,7 @@ var excludedSignatureRoutes = []string{
 }
 
 func Signature() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		// 1. Bypass excluded route
 		path := strings.Split(c.OriginalURL(), "?")[0]
 		for _, route := range excludedSignatureRoutes {

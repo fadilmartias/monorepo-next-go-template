@@ -6,7 +6,7 @@ import (
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type SuccessResponseFormat struct {
@@ -62,7 +62,7 @@ func NewFormError(message string, errors map[string]string) *FormError {
 }
 
 // SuccessResponse mengirim response JSON standar untuk sukses
-func SuccessResponse(c *fiber.Ctx, params SuccessResponseFormat) error {
+func SuccessResponse(c fiber.Ctx, params SuccessResponseFormat) error {
 	response := OrderedSuccessResponse{
 		Success:    true,
 		Message:    params.Message,
@@ -74,7 +74,7 @@ func SuccessResponse(c *fiber.Ctx, params SuccessResponseFormat) error {
 }
 
 // ErrorResponse mengirim response JSON standar untuk error
-func ErrorResponse(c *fiber.Ctx, params ErrorResponseFormat, errs ...error) error {
+func ErrorResponse(c fiber.Ctx, params ErrorResponseFormat, errs ...error) error {
 	response := OrderedErrorResponse{
 		Success: false,
 		Message: params.Message,

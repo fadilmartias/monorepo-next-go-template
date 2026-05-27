@@ -4,7 +4,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ func NewDashboardController(db *gorm.DB, redis *config.RedisClient) *DashboardCo
 	return &DashboardController{DB: db, Redis: redis}
 }
 
-func (ctrl *DashboardController) Index(c *fiber.Ctx) error {
+func (ctrl *DashboardController) Index(c fiber.Ctx) error {
 
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 		Message: "Berhasil mendapatkan data dashboard",

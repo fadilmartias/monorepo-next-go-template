@@ -7,11 +7,11 @@ import (
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func UserOwnership(inputColumn string, modelColumn string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		// Ambil user dari context
 		user, ok := c.Locals("user").(models.User)
 		if !ok {
@@ -23,7 +23,7 @@ func UserOwnership(inputColumn string, modelColumn string) fiber.Handler {
 
 		// Parse body request menjadi map
 		input := make(map[string]any)
-		if err := c.BodyParser(&input); err != nil {
+		if err := c.Bind().Body(&input); err != nil {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:    fiber.StatusBadRequest,
 				Message: "Invalid request body",

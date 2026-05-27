@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
 
 func TraceIDMiddleware() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 
 		// Cek apakah client sudah kirim trace id
 		traceID := c.Get("X-Request-ID")
@@ -18,9 +18,9 @@ func TraceIDMiddleware() fiber.Handler {
 		}
 
 		// Inject ke context
-		ctx := c.UserContext()
+		ctx := c.Context()
 		ctx = context.WithValue(ctx, utils.CtxTraceID, traceID)
-		c.SetUserContext(ctx)
+		c.SetContext(ctx)
 
 		// Set ke header response
 		c.Set("X-Trace-ID", traceID)
@@ -28,3 +28,5 @@ func TraceIDMiddleware() fiber.Handler {
 		return c.Next()
 	}
 }
+
+// fiber:context-methods migrated

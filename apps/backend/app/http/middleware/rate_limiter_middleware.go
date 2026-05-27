@@ -7,8 +7,8 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/golang-jwt/jwt"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/limiter"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +20,7 @@ func RateLimiter(max int, expiration time.Duration) fiber.Handler {
 		expiration = 1 * time.Minute
 	}
 	return limiter.New(limiter.Config{
-		Next: func(c *fiber.Ctx) bool {
+		Next: func(c fiber.Ctx) bool {
 			ip := c.Get("X-Forwarded-For")
 			if ip == "" {
 				ip = c.IP()
@@ -33,7 +33,7 @@ func RateLimiter(max int, expiration time.Duration) fiber.Handler {
 		},
 		Max:        max,
 		Expiration: expiration,
-		KeyGenerator: func(c *fiber.Ctx) string {
+		KeyGenerator: func(c fiber.Ctx) string {
 			user := c.Locals("user")
 			if user != nil {
 				id := user.(jwt.MapClaims)["id"].(string)
@@ -57,7 +57,7 @@ func RateLimiter(max int, expiration time.Duration) fiber.Handler {
 			}
 			return visitorID
 		},
-		LimitReached: func(c *fiber.Ctx) error {
+		LimitReached: func(c fiber.Ctx) error {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:    fiber.StatusTooManyRequests,
 				Message: "Terlalu banyak permintaan",

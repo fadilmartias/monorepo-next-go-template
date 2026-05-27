@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/contrib/v3/websocket"
+	"github.com/gofiber/fiber/v3"
 )
 
 func RegisterWebsocketRoutes(app *fiber.App) {
 	// Rute websocket memerlukan middleware khusus
-	app.Use("/ws", func(c *fiber.Ctx) error {
+	app.Use("/ws", func(c fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
 			c.Locals("allowed", true)
 			return c.Next()

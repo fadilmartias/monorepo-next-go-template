@@ -5,12 +5,12 @@ import (
 	"os"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt"
 )
 
 func GetUser() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		token := c.Cookies("access_token_" + os.Getenv("APP_ENV")) // baca dari cookie
 		if token == "" {
 			// Tidak ada token, lanjut tanpa user

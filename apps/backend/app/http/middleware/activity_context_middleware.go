@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt"
 )
 
-func GetRealIP(c *fiber.Ctx) string {
+func GetRealIP(c fiber.Ctx) string {
 	// Prioritas 1: Cloudflare
 	cfIP := c.Get("CF-Connecting-IP")
 	if cfIP != "" {
@@ -36,7 +36,7 @@ func GetRealIP(c *fiber.Ctx) string {
 
 // ActivityContextMiddleware injects causer & request metadata into the user context
 func ActivityContextMiddleware() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 
 		// Ambil user ID dari c.Locals("user_id")
 		// misal di auth middleware kamu sudah set ini
@@ -50,14 +50,16 @@ func ActivityContextMiddleware() fiber.Handler {
 		ip := GetRealIP(c)
 
 		// generate context baru
-		ctx := c.UserContext()
+		ctx := c.Context()
 		ctx = context.WithValue(ctx, utils.CtxCauserID, userID)
 		ctx = context.WithValue(ctx, utils.CtxIP, ip)
 		ctx = context.WithValue(ctx, utils.CtxUserAgent, string(c.Request().Header.UserAgent()))
 
 		// assign context baru ke Fiber
-		c.SetUserContext(ctx)
+		c.SetContext(ctx)
 
 		return c.Next()
 	}
 }
+
+// fiber:context-methods migrated

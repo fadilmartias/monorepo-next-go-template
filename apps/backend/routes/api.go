@@ -17,7 +17,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/graph"
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
@@ -29,7 +29,7 @@ func RegisterApiRoutes(app *fiber.App, db *gorm.DB, redis *config.RedisClient) {
 	app.Use(middleware.GetUser())
 
 	// ========= ROOT ROUTES =========
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/", func(c fiber.Ctx) error {
 		return utils.SuccessResponse(c, utils.SuccessResponseFormat{
 			Message: "Hello, World!",
 		})
@@ -190,17 +190,19 @@ func RegisterApiRoutes(app *fiber.App, db *gorm.DB, redis *config.RedisClient) {
 		),
 	)
 	// GraphQL endpoint
-	app.All("/graphql", func(c *fiber.Ctx) error {
+	app.All("/graphql", func(c fiber.Ctx) error {
 		handler := fasthttpadaptor.NewFastHTTPHandlerFunc(srv.ServeHTTP)
-		handler(c.Context())
+		handler(c.RequestCtx())
 		return nil
 	})
 
-	app.Get("/playground", func(c *fiber.Ctx) error {
+	app.Get("/playground", func(c fiber.Ctx) error {
 		handler := fasthttpadaptor.NewFastHTTPHandlerFunc(
 			playground.Handler("GraphQL Playground", "/graphql"),
 		)
-		handler(c.Context()) // ⛔ ini wajib dipanggil!
+		handler(c.RequestCtx()) // ⛔ ini wajib dipanggil!
 		return nil
 	})
 }
+
+// fiber:context-methods migrated

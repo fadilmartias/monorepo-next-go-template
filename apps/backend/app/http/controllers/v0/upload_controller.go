@@ -11,7 +11,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils" // Ganti dengan path utils Anda
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +24,7 @@ func NewUploadController(db *gorm.DB, redis *config.RedisClient) *UploadControll
 	return &UploadController{DB: db, Redis: redis}
 }
 
-func (ctrl *UploadController) Upload(c *fiber.Ctx) error {
+func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 	form, err := c.MultipartForm()
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{

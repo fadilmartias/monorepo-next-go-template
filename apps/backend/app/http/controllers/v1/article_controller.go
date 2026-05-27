@@ -5,7 +5,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type ArticleController struct {
@@ -16,8 +16,8 @@ func NewArticleController(articleService *services.ArticleService) *ArticleContr
 	return &ArticleController{ArticleService: articleService}
 }
 
-func (ctrl *ArticleController) Index(c *fiber.Ctx) error {
-	limit := c.QueryInt("limit", 10)
+func (ctrl *ArticleController) Index(c fiber.Ctx) error {
+	limit := fiber.Query[int](c, "limit", 10)
 	articles, err := ctrl.ArticleService.GetPublishedArticles(limit)
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -31,9 +31,9 @@ func (ctrl *ArticleController) Index(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *ArticleController) Show(c *fiber.Ctx) error {
+func (ctrl *ArticleController) Show(c fiber.Ctx) error {
 	slug := c.Params("slug")
-	related := c.QueryBool("related", false)
+	related := fiber.Query[bool](c, "related", false)
 	article, err := ctrl.ArticleService.GetPublishedArticleBySlug(slug, related)
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -47,8 +47,8 @@ func (ctrl *ArticleController) Show(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *ArticleController) Popular(c *fiber.Ctx) error {
-	limit := c.QueryInt("limit", 10)
+func (ctrl *ArticleController) Popular(c fiber.Ctx) error {
+	limit := fiber.Query[int](c, "limit", 10)
 	except := c.Query("except", "")
 	articles, err := ctrl.ArticleService.GetPopularArticles(limit, except)
 	if err != nil {
@@ -63,9 +63,9 @@ func (ctrl *ArticleController) Popular(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *ArticleController) Process(c *fiber.Ctx) error {
+func (ctrl *ArticleController) Process(c fiber.Ctx) error {
 	article := models.Article{}
-	if err := c.BodyParser(&article); err != nil {
+	if err := c.Bind().Body(&article); err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusBadRequest,
 			Message: "Gagal memproses data artikel",

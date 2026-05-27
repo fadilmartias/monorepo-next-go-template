@@ -8,7 +8,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/golang-jwt/jwt"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	// TAMBAHKAN IMPORT INI
 )
 
@@ -22,7 +22,7 @@ func NewUserController(userService *services.UserService) *UserController {
 }
 
 // Index mengambil semua user
-func (ctrl *UserController) Index(c *fiber.Ctx) error {
+func (ctrl *UserController) Index(c fiber.Ctx) error {
 	users, err := ctrl.UserService.GetAll()
 	if err != nil {
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
@@ -40,7 +40,7 @@ func (ctrl *UserController) Index(c *fiber.Ctx) error {
 }
 
 // Show mengambil satu user
-func (ctrl *UserController) Show(c *fiber.Ctx) error {
+func (ctrl *UserController) Show(c fiber.Ctx) error {
 	id := c.Params("id")
 	userDB, err := ctrl.UserService.FindByID(id)
 	if err != nil {
@@ -57,7 +57,7 @@ func (ctrl *UserController) Show(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *UserController) UpdateProfile(c *fiber.Ctx) error {
+func (ctrl *UserController) UpdateProfile(c fiber.Ctx) error {
 	input := c.Locals("validatedBody").(requests.UpdateProfileInput)
 	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
 	user, err := ctrl.UserService.UpdateProfile(id, input)
@@ -88,7 +88,7 @@ func (ctrl *UserController) UpdateProfile(c *fiber.Ctx) error {
 	})
 }
 
-func (ctrl *UserController) UpdatePassword(c *fiber.Ctx) error {
+func (ctrl *UserController) UpdatePassword(c fiber.Ctx) error {
 	input := c.Locals("validatedBody").(requests.UpdatePasswordInput)
 	id := c.Locals("user").(jwt.MapClaims)["id"].(string)
 

@@ -4,7 +4,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type ActivityLogController struct {
@@ -14,7 +14,7 @@ type ActivityLogController struct {
 func NewActivityLogController(activityLogService *services.ActivityLogService) *ActivityLogController {
 	return &ActivityLogController{ActivityLogService: activityLogService}
 }
-func (ctrl *ActivityLogController) Show(c *fiber.Ctx) error {
+func (ctrl *ActivityLogController) Show(c fiber.Ctx) error {
 	id := c.Params("id")
 	activityLog, err := ctrl.ActivityLogService.FindByID(id)
 	if err != nil {

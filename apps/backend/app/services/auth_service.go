@@ -14,7 +14,7 @@ import (
 	"github.com/fadilmartias/dilz_code/apps/backend/app/usecases"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/pquerna/otp/totp"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/bcrypt"
@@ -95,7 +95,7 @@ func (s *AuthService) CreateNewUser(trx *gorm.DB, input requests.RegisterInput, 
 	return &newUser, nil
 }
 
-func (s *AuthService) Register(c *fiber.Ctx, input requests.RegisterInput) error {
+func (s *AuthService) Register(c fiber.Ctx, input requests.RegisterInput) error {
 	trx := s.DB.Begin()
 	if trx.Error != nil {
 		return trx.Error

@@ -2,11 +2,11 @@ package middleware
 
 import (
 	config "github.com/fadilmartias/dilz_code/apps/backend/app/logger"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func Logger() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		err := c.Next()
 
 		if err != nil {

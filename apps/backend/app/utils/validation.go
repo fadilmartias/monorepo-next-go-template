@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func GetValidatedBody[T any](c *fiber.Ctx) (T, error) {
+func GetValidatedBody[T any](c fiber.Ctx) (T, error) {
 	v := c.Locals("validatedBody")
 	input, ok := v.(T)
 	if !ok {

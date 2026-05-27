@@ -6,7 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +19,7 @@ type cachedResponse struct {
 const cacheTTL = 5 * time.Minute
 
 func Idempotency(redis *config.RedisClient) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		if fiber.IsMethodSafe(c.Method()) {
 			return c.Next()
 		}
@@ -29,7 +29,7 @@ func Idempotency(redis *config.RedisClient) fiber.Handler {
 			c.Request().Header.Add("X-Idempotency-Key", key)
 		}
 
-		ctx := c.UserContext()
+		ctx := c.Context()
 		cacheKey := "idem:" + key
 
 		// 🔹 Cek apakah sudah pernah disimpan
@@ -64,3 +64,5 @@ func Idempotency(redis *config.RedisClient) fiber.Handler {
 		return nil
 	}
 }
+
+// fiber:context-methods migrated

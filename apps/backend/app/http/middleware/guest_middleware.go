@@ -4,11 +4,11 @@ import (
 	"errors"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/utils"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func Guest() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		if c.Locals("user") != nil || c.Get("Authorization") != "" {
 			return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 				Code:    fiber.StatusForbidden,
