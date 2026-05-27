@@ -2,9 +2,9 @@ package job_handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	"github.com/bytedance/sonic"
 	job_tasks "github.com/fadilmartias/dilz_code/apps/backend/app/jobs/tasks"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/logger"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/requests"
@@ -30,7 +30,7 @@ func NewOTPHandler(db *gorm.DB, telegramService *services.TelegramService, fonnt
 
 func (h *OTPHandler) SendOTP(ctx context.Context, t *asynq.Task) error {
 	var payload job_tasks.SendOTPPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
+	if err := sonic.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 

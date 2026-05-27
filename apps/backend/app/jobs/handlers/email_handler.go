@@ -3,12 +3,12 @@ package job_handlers
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"time"
 
+	"github.com/bytedance/sonic"
 	job_tasks "github.com/fadilmartias/dilz_code/apps/backend/app/jobs/tasks"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/services"
 	"github.com/fadilmartias/dilz_code/apps/backend/config"
@@ -87,7 +87,7 @@ func (s *EmailHandler) BuildBaseEmailData(name, email string) BaseEmailData {
 
 func (h *EmailHandler) HandleResetPassword(ctx context.Context, t *asynq.Task) error {
 	var payload job_tasks.EmailResetPasswordPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
+	if err := sonic.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 
@@ -119,7 +119,7 @@ func (h *EmailHandler) HandleResetPassword(ctx context.Context, t *asynq.Task) e
 
 func (h *EmailHandler) HandleVerification(ctx context.Context, t *asynq.Task) error {
 	var payload job_tasks.EmailVerificationPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
+	if err := sonic.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (h *EmailHandler) HandleVerification(ctx context.Context, t *asynq.Task) er
 
 func (h *EmailHandler) HandleOTP(ctx context.Context, t *asynq.Task) error {
 	var payload job_tasks.SendOTPPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
+	if err := sonic.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 

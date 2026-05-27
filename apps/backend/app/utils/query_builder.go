@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -13,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/client"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/responses"
 	"github.com/go-redis/redis/v8"
@@ -417,7 +417,7 @@ func FetchAndCacheDynamic(
 			if isSingle {
 				result := reflect.New(responseType).Interface()
 				response := &SingleResponse[any]{Data: result}
-				if json.Unmarshal([]byte(cachedData), response) == nil {
+				if sonic.Unmarshal([]byte(cachedData), response) == nil {
 					fmt.Println("📦 Using cached single response for", modelType.Name())
 					return *response, nil
 				}
@@ -425,7 +425,7 @@ func FetchAndCacheDynamic(
 				sliceType := reflect.SliceOf(responseType)
 				result := reflect.New(sliceType).Interface()
 				response := &PaginatedResponse[any]{Data: result}
-				if json.Unmarshal([]byte(cachedData), response) == nil {
+				if sonic.Unmarshal([]byte(cachedData), response) == nil {
 					fmt.Println("📦 Using cached paginated response for", modelType.Name())
 					return *response, nil
 				}
@@ -486,7 +486,7 @@ func FetchAndCacheDynamic(
 	// ================== 3. Simpan ke Cache ==================
 	if cacheKey != "" && dbErr == nil {
 		log.Println("📦 Setting cache for", modelType.Name(), "with key", cacheKey)
-		if jsonResponse, err := json.Marshal(response); err == nil {
+		if jsonResponse, err := sonic.Marshal(response); err == nil {
 			if err := redisClient.Set(ctx, cacheKey, jsonResponse, cacheDuration); err != nil {
 				fmt.Printf("Failed to set cache for key '%s': %v\n", cacheKey, err)
 			}

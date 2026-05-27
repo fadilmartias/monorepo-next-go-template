@@ -1,9 +1,9 @@
 package job_tasks
 
 import (
-	"encoding/json"
 	"fmt"
 
+	"github.com/bytedance/sonic"
 	"github.com/hibiken/asynq"
 )
 
@@ -25,7 +25,7 @@ type EmailResetPasswordPayload struct {
 }
 
 func NewEmailVerificationTask(to, token, name string) (*asynq.Task, error) {
-	payload, err := json.Marshal(EmailVerificationPayload{To: to, Token: token, Name: name})
+	payload, err := sonic.Marshal(EmailVerificationPayload{To: to, Token: token, Name: name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal payload: %w", err)
 	}
@@ -33,7 +33,7 @@ func NewEmailVerificationTask(to, token, name string) (*asynq.Task, error) {
 }
 
 func NewEmailResetPasswordTask(to, token, name string) (*asynq.Task, error) {
-	payload, err := json.Marshal(EmailResetPasswordPayload{To: to, Token: token, Name: name})
+	payload, err := sonic.Marshal(EmailResetPasswordPayload{To: to, Token: token, Name: name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal payload: %w", err)
 	}
