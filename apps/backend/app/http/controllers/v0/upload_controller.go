@@ -62,6 +62,7 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		"image/gif":     ".gif",
 		"image/svg+xml": ".svg",
 	}
+
 	ext := filepath.Ext(uploadedFile.Filename)
 	if ext == "" || ext == "blob" {
 		var ok bool
@@ -71,16 +72,23 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 		}
 	}
 
+	// Tentukan target direktori
 	var uploadDir string
 	if fieldName == "tinymce" {
-		uploadDir = "public/uploads/tinymce"
+		uploadDir = filepath.Join("storage", "uploads", "tinymce")
 	} else {
-		uploadDir = "public/uploads/tmp/" + strings.ToLower(fieldName) + "s"
+		// e.g. "storage/uploads/tmp/images"
+		uploadDir = filepath.Join("storage", "uploads", "tmp", fmt.Sprintf("%ss", strings.ToLower(fieldName)))
 	}
-	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+
+	// GARANSI PEMBUATAN DIREKTORI
+	// 0755 memastikan direktori bisa dibaca/dieksekusi publik, dan ditulis oleh owner (user golang)
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		// Log error di server console untuk kemudahan tracing ops
+		fmt.Printf("[UPLOAD ERROR] Gagal membuat direktori %s: %v\n", uploadDir, err)
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to create upload directory",
+			Message: "Server configuration error: failed to initialize storage directory",
 		})
 	}
 
@@ -89,18 +97,20 @@ func (ctrl *UploadController) Upload(c fiber.Ctx) error {
 	newFileName := fmt.Sprintf("%s-%d-%s%s", fieldName, timestamp, randomStr, ext)
 	savePath := filepath.Join(uploadDir, newFileName)
 
+	// Save file ke local disk
 	if err := c.SaveFile(uploadedFile, savePath); err != nil {
+		fmt.Printf("[UPLOAD ERROR] Gagal menyimpan file ke %s: %v\n", savePath, err)
 		return utils.ErrorResponse(c, utils.ErrorResponseFormat{
 			Code:    fiber.StatusInternalServerError,
-			Message: "Failed to save file",
+			Message: "Failed to write file to disk",
 		})
 	}
 
 	var fileURL string
 	if fieldName == "tinymce" {
-		fileURL = fmt.Sprintf(os.Getenv("APP_URL")+"/uploads/tinymce/%s", newFileName)
+		fileURL = fmt.Sprintf("%s/uploads/tinymce/%s", os.Getenv("APP_URL"), newFileName)
 	} else {
-		fileURL = fmt.Sprintf(os.Getenv("APP_URL")+"/uploads/tmp/%ss/%s", strings.ToLower(fieldName), newFileName)
+		fileURL = fmt.Sprintf("%s/uploads/tmp/%ss/%s", os.Getenv("APP_URL"), strings.ToLower(fieldName), newFileName)
 	}
 
 	return utils.SuccessResponse(c, utils.SuccessResponseFormat{

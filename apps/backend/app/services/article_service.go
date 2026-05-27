@@ -69,7 +69,6 @@ func (s *ArticleService) GetPopularArticles(limit int, except string) ([]models.
 }
 
 func (s *ArticleService) Process(article *models.Article) (*models.Article, error) {
-	// finalDir := "public/uploads/images/articles"
 	finalDir := "uploads/images/articles"
 
 	// Pindahkan thumbnail utama

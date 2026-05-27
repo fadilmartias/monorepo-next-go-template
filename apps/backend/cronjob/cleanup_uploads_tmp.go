@@ -7,7 +7,7 @@ import (
 )
 
 func cleanupTmpFolder() {
-	tmpDir := "./public/uploads/tmp"
+	tmpDir := "./storage/uploads/tmp"
 	exclude := map[string]bool{
 		"images": true,
 		"docs":   true,

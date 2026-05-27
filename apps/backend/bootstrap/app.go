@@ -150,7 +150,8 @@ func NewApp() (*fiber.App, *gorm.DB, *redis.Client) {
 		IdleTimeout: 10 * time.Minute,
 	}))
 	app.Use(requestid.New())
-	app.Get("/*", static.New("./public")) // Static file
+	app.Use("/statics", static.New("./public"))
+	app.Use("/uploads", static.New("./storage/uploads"))
 	app.Get("/metrics", monitor.New(monitor.Config{Title: "Firavel Metrics Page"}))
 	app.Get(healthcheck.LivenessEndpoint, healthcheck.New())
 	cronjob.StartCronJob(db)

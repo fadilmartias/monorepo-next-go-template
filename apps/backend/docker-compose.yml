@@ -1,0 +1,12 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dilz_backend
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./storage:/storage

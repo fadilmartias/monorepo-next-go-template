@@ -173,14 +173,6 @@ func RegisterApiRoutes(app *fiber.App, db *gorm.DB, redis *redis.Client) {
 		dashboardRoutes.Get("/", middleware.Auth([]string{"admin"}, []string{}), controllers_v1.NewDashboardController(db, redis).Index).Name("dashboard.index")
 	}
 
-	// --- Product Rating Module ---
-	// productRatingRoutes := apiV1.Group("/product-ratings")
-	// {
-	// 	productRatingRoutes.Get("/public/:product_id", productRatingController.GetPublicRatingByProductID).Name("product-ratings.public")
-	// 	productRatingRoutes.Post("/", middleware.Validator[requests.ProductRatingStoreRequest](), productRatingController.Store).Name("product-ratings.store")
-	// 	productRatingRoutes.Put("/:id", middleware.Validator[requests.ProductRatingStoreRequest](), productRatingController.Update).Name("product-ratings.update")
-	// }
-
 	// GraphQL server
 	srv := handler.NewDefaultServer(
 		graph.NewExecutableSchema(

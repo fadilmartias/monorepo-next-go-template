@@ -31,14 +31,5 @@ air.log
 /storage/logs/*
 !/storage/logs/.gitkeep
 
-/public/uploads/tmp/images/*
-/public/uploads/tmp/docs/*
-/public/uploads/images/*
-/public/uploads/docs/*
-/public/uploads/tinymce/*
-
-!/public/uploads/tmp/images/.gitkeep
-!/public/uploads/tmp/docs/.gitkeep
-!/public/uploads/images/.gitkeep
-!/public/uploads/docs/.gitkeep
-!/public/uploads/tinymce/.gitkeep
+/storage/uploads/*
+!/storage/uploads/.gitkeep
