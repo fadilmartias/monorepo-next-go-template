@@ -58,12 +58,24 @@ type GetUserConfig struct {
 type APIKeyLookupFunc func(ctx context.Context, key string) (any, bool, error)
 
 type APIKeyConfig struct {
-	DB       *gorm.DB
-	Lookup   APIKeyLookupFunc
-	Table    string
-	Model    any
-	Column   string
-	Selected string
+	DB             *gorm.DB
+	Lookup         APIKeyLookupFunc
+	Table          string
+	Model          any
+	Column         string
+	Selected       string
+	Joins          []string
+	Preloads       []string
+	MergeRelations []string
+}
+
+func (cfg APIKeyConfig) WithUserRelation(relation string) APIKeyConfig {
+	if relation == "" {
+		relation = "User"
+	}
+	cfg.Preloads = appendUnique(cfg.Preloads, relation)
+	cfg.MergeRelations = appendUnique(cfg.MergeRelations, relation)
+	return cfg
 }
 
 func GetUserWithConfig(cfg GetUserConfig) fiber.Handler {
@@ -179,6 +191,12 @@ func authenticateAPIKey(ctx context.Context, key string, cfg GetUserConfig) (jwt
 
 	dest := newModelDestination(cfg.APIKey.Model)
 	query := cfg.APIKey.DB.Model(dest)
+	for _, join := range cfg.APIKey.Joins {
+		query = query.Joins(join)
+	}
+	for _, preload := range cfg.APIKey.Preloads {
+		query = query.Preload(preload)
+	}
 	if cfg.APIKey.Table != "" {
 		query = cfg.APIKey.DB.Table(cfg.APIKey.Table)
 	}
@@ -191,7 +209,12 @@ func authenticateAPIKey(ctx context.Context, key string, cfg GetUserConfig) (jwt
 		return nil, false, err
 	}
 
-	return claimsFromValue(reflect.Indirect(reflect.ValueOf(dest)).Interface()), true, nil
+	claims := claimsFromValue(reflect.Indirect(reflect.ValueOf(dest)).Interface())
+	for _, relation := range cfg.APIKey.MergeRelations {
+		claims = mergeClaims(claims, claimsFromField(dest, relation))
+	}
+
+	return claims, true, nil
 }
 
 func newModelDestination(model any) any {
@@ -251,6 +274,60 @@ func claimsFromValue(value any) jwt.MapClaims {
 	}
 
 	return claims
+}
+
+func claimsFromField(value any, fieldName string) jwt.MapClaims {
+	if value == nil || fieldName == "" {
+		return jwt.MapClaims{}
+	}
+
+	rv := reflect.ValueOf(value)
+	if rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			return jwt.MapClaims{}
+		}
+		rv = rv.Elem()
+	}
+	if rv.Kind() != reflect.Struct {
+		return jwt.MapClaims{}
+	}
+
+	field := rv.FieldByName(fieldName)
+	if !field.IsValid() {
+		for i := 0; i < rv.NumField(); i++ {
+			if strings.EqualFold(rv.Type().Field(i).Name, fieldName) {
+				field = rv.Field(i)
+				break
+			}
+		}
+	}
+	if !field.IsValid() {
+		return jwt.MapClaims{}
+	}
+
+	return claimsFromValue(field.Interface())
+}
+
+func mergeClaims(dst, src jwt.MapClaims) jwt.MapClaims {
+	if dst == nil {
+		dst = jwt.MapClaims{}
+	}
+	for key, value := range src {
+		dst[key] = value
+	}
+	return dst
+}
+
+func appendUnique(values []string, value string) []string {
+	if value == "" {
+		return values
+	}
+	for _, existing := range values {
+		if existing == value {
+			return values
+		}
+	}
+	return append(values, value)
 }
 
 func cloneClaims(src jwt.MapClaims) jwt.MapClaims {
