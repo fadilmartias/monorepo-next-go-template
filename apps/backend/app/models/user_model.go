@@ -8,37 +8,23 @@ import (
 
 	"github.com/bytedance/sonic"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type User struct {
-	ID                 string         `gorm:"primaryKey;size:7" json:"id"`
-	GoogleID           NullString     `gorm:"size:100"`
-	DiscordID          NullString     `gorm:"size:100"`
-	FacebookID         NullString     `gorm:"size:100"`
-	SteamID            NullString     `gorm:"size:100"`
-	AppleID            NullString     `gorm:"size:100"`
-	TwitchID           NullString     `gorm:"size:100"`
-	TenantID           string         `gorm:"not null;size:7;index" json:"tenant_id"`
-	TotalExp           int            `gorm:"not null;default:0" json:"total_exp"`
-	Exp                int            `gorm:"not null;default:0" json:"exp"`
-	Level              int            `gorm:"not null;default:1" json:"level"`
-	Name               string         `gorm:"not null;size:100;index" faker:"name" json:"name"`
-	Email              string         `gorm:"uniqueIndex;not null;size:100" faker:"email" json:"email"`
-	Phone              string         `gorm:"size:15" json:"phone"`
-	Password           string         `gorm:"not null;size:100" faker:"password" json:"password"`
-	Role               string         `gorm:"type:enum('superadmin','admin','user');default:'user';not null;index" json:"role"`
-	RefreshToken       *string        `gorm:"type:text" json:"refresh_token"`
-	TOTPSecret         *string        `gorm:"type:text" json:"totp_secret"`
-	EmailVerifiedAt    *time.Time     `json:"email_verified_at"`
-	TotalSpent         float64        `gorm:"not null;default:0" json:"total_spent"`
-	ActiveAvatarID     NullString     `json:"active_avatar_id"`
-	ActiveBackgroundID NullString     `json:"active_background_id"`
-	ActiveBorderID     NullString     `json:"active_border_id"`
-	ActiveTitleID      NullString     `json:"active_title_id"`
-	CreatedAt          time.Time      `gorm:"not null" json:"created_at"`
-	UpdatedAt          time.Time      `json:"updated_at"`
-	DeletedAt          gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	BaseModelWithDeletedAt
+	GoogleID        NullString    `gorm:"size:100"`
+	FacebookID      NullString    `gorm:"size:100"`
+	TenantID        string        `gorm:"type:char(36);index;not null" json:"tenant_id"`
+	Name            string        `gorm:"not null;size:100;index" faker:"name" json:"name"`
+	Email           string        `gorm:"uniqueIndex;size:100" json:"email,omitempty"`
+	Phone           string        `gorm:"size:15" json:"phone"`
+	Password        string        `gorm:"not null;size:100" faker:"password" json:"password"`
+	Role            UserRole      `gorm:"size:20;default:'user';not null;index" json:"role"`
+	RefreshToken    *string       `gorm:"type:text" json:"refresh_token"`
+	TOTPSecret      *string       `gorm:"type:text" json:"totp_secret"`
+	EmailVerifiedAt *time.Time    `json:"email_verified_at"`
+	CurrentBalance  float64       `gorm:"not null;default:0" json:"balance"`
+	Passkeys        []UserPasskey `gorm:"foreignKey:UserID" json:"passkeys"`
 }
 
 var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -50,14 +36,6 @@ func GenerateID(length int) string {
 		b[i] = shortIDChars[seededRand.Intn(len(shortIDChars))]
 	}
 	return string(b)
-}
-
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	if u.ID == "" {
-		u.ID = GenerateID(7)
-	}
-
-	return
 }
 
 // HashPassword mengenkripsi password sebelum disimpan

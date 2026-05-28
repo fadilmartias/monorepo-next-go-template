@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
-
 	"gorm.io/gorm"
 )
 
@@ -82,34 +81,34 @@ func SeedSetting(db *gorm.DB, count int) {
 
 	// Optional: predefined example
 	sample := models.Setting{
-		ID:    "ST1",
-		Key:   "privacy-policy",
-		Value: pp,
-		Type:  "text",
+		BaseModel: models.BaseModel{ID: "ST1"},
+		Key:       "privacy-policy",
+		Value:     pp,
+		Type:      "text",
 	}
 	items = append(items, sample)
 
 	sample = models.Setting{
-		ID:    "ST2",
-		Key:   "terms-and-conditions",
-		Value: tnc,
-		Type:  "text",
+		BaseModel: models.BaseModel{ID: "ST2"},
+		Key:       "terms-and-conditions",
+		Value:     tnc,
+		Type:      "text",
 	}
 	items = append(items, sample)
 
 	sample = models.Setting{
-		ID:    "ST3",
-		Key:   "ppn",
-		Value: "0.11",
-		Type:  "number",
+		BaseModel: models.BaseModel{ID: "ST3"},
+		Key:       "ppn",
+		Value:     "0.11",
+		Type:      "number",
 	}
 	items = append(items, sample)
 
 	sample = models.Setting{
-		ID:    "ST4",
-		Key:   "digiflazz_balance",
-		Value: "143000",
-		Type:  "number",
+		BaseModel: models.BaseModel{ID: "ST4"},
+		Key:       "digiflazz_balance",
+		Value:     "143000",
+		Type:      "number",
 	}
 	items = append(items, sample)
 

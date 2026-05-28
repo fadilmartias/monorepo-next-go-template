@@ -137,15 +137,7 @@ func (s *AuthOAuthService) applyOAuthProviderID(user *models.User, provider, id 
 	switch provider {
 	case "google":
 		user.GoogleID = models.NewNullString(id)
-	case "discord":
-		user.DiscordID = models.NewNullString(id)
 	case "facebook":
 		user.FacebookID = models.NewNullString(id)
-	case "steam":
-		user.SteamID = models.NewNullString(id)
-	case "twitch":
-		user.TwitchID = models.NewNullString(id)
-	case "apple":
-		user.AppleID = models.NewNullString(id)
 	}
 }

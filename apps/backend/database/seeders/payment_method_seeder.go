@@ -6,9 +6,32 @@ import (
 	"time"
 
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
-
 	"gorm.io/gorm"
 )
+
+type paymentMethodSeed struct {
+	ID                string
+	PaymentGatewayID  string
+	CategoryID        string
+	Order             int
+	Type              string
+	Code              string
+	InvoiceCode       string
+	Name              string
+	FeeFixed          float64
+	FeePercent        float64
+	PPN               float64
+	MinAmount         float64
+	MaxAmount         float64
+	Img               *string
+	Desc              *string
+	ExpirySeconds     int
+	IsActive          bool
+	IsReadyProduction bool
+	IsInternational   bool
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
 
 func SeedPaymentMethod(db *gorm.DB, count int) {
 	log.Printf("Seeding %d payment method...", count)
@@ -36,7 +59,7 @@ func SeedPaymentMethod(db *gorm.DB, count int) {
 	permataDesc := "Virtual Account untuk Permata Bank"
 	cimbDesc := "Virtual Account untuk CIMB Bank"
 	// Optional: predefined example
-	sample := []models.PaymentMethod{
+	seeds := []paymentMethodSeed{
 		{
 			ID:                "PM1",
 			PaymentGatewayID:  "PG1",
@@ -360,6 +383,31 @@ func SeedPaymentMethod(db *gorm.DB, count int) {
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
 		},
+	}
+
+	sample := make([]models.PaymentMethod, 0, len(seeds))
+	for _, seed := range seeds {
+		sample = append(sample, models.PaymentMethod{
+			BaseModel:         models.BaseModel{ID: seed.ID, CreatedAt: seed.CreatedAt, UpdatedAt: seed.UpdatedAt},
+			PaymentGatewayID:  seed.PaymentGatewayID,
+			CategoryID:        seed.CategoryID,
+			Order:             seed.Order,
+			Type:              seed.Type,
+			Code:              seed.Code,
+			InvoiceCode:       seed.InvoiceCode,
+			Name:              seed.Name,
+			FeeFixed:          seed.FeeFixed,
+			FeePercent:        seed.FeePercent,
+			PPN:               seed.PPN,
+			MinAmount:         seed.MinAmount,
+			MaxAmount:         seed.MaxAmount,
+			Img:               seed.Img,
+			Desc:              seed.Desc,
+			ExpirySeconds:     seed.ExpirySeconds,
+			IsActive:          seed.IsActive,
+			IsReadyProduction: seed.IsReadyProduction,
+			IsInternational:   seed.IsInternational,
+		})
 	}
 	items = append(items, sample...)
 

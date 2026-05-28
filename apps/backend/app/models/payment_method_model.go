@@ -1,13 +1,7 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
-
 type PaymentMethod struct {
-	ID                string  `gorm:"primaryKey;size:7" json:"id"`
+	BaseModel
 	PaymentGatewayID  string  `gorm:"not null;size:7;index" json:"payment_gateway_id"`
 	CategoryID        string  `gorm:"not null;size:7;index" json:"category_id"`
 	Order             int     `gorm:"not null;index" json:"order"`
@@ -28,15 +22,5 @@ type PaymentMethod struct {
 	IsInternational   bool    `gorm:"default:false;not null;index" json:"is_international"`
 	AdditionalFields  *string `gorm:"type:text" json:"additional_fields"` // could be JSON
 	Category          *Category
-	CreatedAt         time.Time `gorm:"not null" json:"created_at"`
-	UpdatedAt         time.Time `gorm:"not null" json:"updated_at"`
 	PaymentGateway    *PaymentGateway
-}
-
-func (t *PaymentMethod) BeforeCreate(tx *gorm.DB) (err error) {
-	if t.ID == "" {
-		t.ID = GenerateID(7)
-	}
-
-	return
 }

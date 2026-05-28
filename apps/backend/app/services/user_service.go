@@ -46,8 +46,7 @@ func (s *UserService) GetAll() ([]responses.UserResponse, error) {
 
 // Show mengambil satu user
 func (s *UserService) FindByID(id string) (*responses.UserResponse, error) {
-	var point float64
-	userDB, err := s.UserRepository.FindByID(id, s.UserRepository.WithPreload("ActiveTitle"), s.UserRepository.WithPreload("UserPoint"), s.UserRepository.WithPreload("UserReferral"))
+	userDB, err := s.UserRepository.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +61,7 @@ func (s *UserService) FindByID(id string) (*responses.UserResponse, error) {
 		TenantID:        &userDB.TenantID,
 		CreatedAt:       &userDB.CreatedAt,
 		UpdatedAt:       &userDB.UpdatedAt,
-		Level:           userDB.Level,
-		Exp:             userDB.Exp,
-		TotalSpent:      userDB.TotalSpent,
-		TotalExp:        userDB.TotalExp,
-		ExpForLevel:     utils.ExpToNextLevel(userDB.Level),
 		Is2FAEnabled:    userDB.TOTPSecret != nil,
-		Point:           point,
 	}, nil
 }
 
@@ -154,74 +147,6 @@ func (s *UserService) UpdatePassword(id string, input requests.UpdatePasswordInp
 	}
 	input.NewPassword = string(bytes)
 	if _, err := s.UserRepository.UpdateByID(id, map[string]any{"password": input.NewPassword}); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Update user exp + level
-func (s *UserService) AddUserExp(userID string, expGain int) error {
-	user, err := s.UserRepository.FindByID(userID)
-	if err != nil {
-		return err
-	}
-	user.Exp += expGain
-	user.TotalExp += expGain
-
-	// Naik level jika exp cukup
-	for user.Exp >= utils.ExpToNextLevel(user.Level) {
-		user.Exp -= utils.ExpToNextLevel(user.Level)
-		user.Level++
-		// Kirim notifikasi/hadiah milestone
-		// GiveLevelReward(user)
-	}
-	if _, err := s.UserRepository.UpdateByModel(user); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UserService) AddTotalSpent(userID string, amount float64) error {
-	user, err := s.UserRepository.FindByID(userID)
-	if err != nil {
-		return err
-	}
-	user.TotalSpent += amount
-	if _, err := s.UserRepository.UpdateByModel(user); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Update user exp + level
-func (s *UserService) ReduceUserExp(userID string, expGain int) error {
-	user, err := s.UserRepository.FindByID(userID)
-	if err != nil {
-		return err
-	}
-	user.Exp -= expGain
-	user.TotalExp -= expGain
-
-	// Turun level jika exp tidak cukup
-	for user.Exp < utils.ExpToNextLevel(user.Level) {
-		user.Exp += utils.ExpToNextLevel(user.Level)
-		user.Level--
-		// Kirim notifikasi/hadiah milestone
-		// GiveLevelReward(user)
-	}
-	if _, err := s.UserRepository.UpdateByModel(user); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *UserService) ReduceTotalSpent(userID string, amount float64) error {
-	user, err := s.UserRepository.FindByID(userID)
-	if err != nil {
-		return err
-	}
-	user.TotalSpent -= amount
-	if _, err := s.UserRepository.UpdateByModel(user); err != nil {
 		return err
 	}
 	return nil

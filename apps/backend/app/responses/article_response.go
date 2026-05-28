@@ -10,7 +10,7 @@ type ArticleResponse struct {
 	ID              string           `json:"id,omitempty"`
 	TenantID        string           `json:"tenant_id,omitempty"`
 	CategoryID      string           `json:"category_id,omitempty"`
-	Category        models.Category  `json:"category,omitempty"`
+	Category        *models.Category `json:"category,omitempty"`
 	Title           string           `json:"title,omitempty"`
 	Author          string           `json:"author,omitempty"`
 	Slug            string           `json:"slug,omitempty"`

@@ -3,13 +3,25 @@ package seeders
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/fadilmartias/dilz_code/apps/backend/app/models"
 
 	"gorm.io/gorm"
 )
+
+func newPaymentGatewaySeed(id string, order int, name string, metadata *string, isActive bool) models.PaymentGateway {
+	sample := models.PaymentGateway{
+		Order:    order,
+		Name:     name,
+		Metadata: metadata,
+		IsActive: isActive,
+	}
+
+	sample.ID = id
+
+	return sample
+}
 
 func SeedPaymentGateway(db *gorm.DB, count int) {
 	log.Printf("Seeding %d payment gateway...", count)
@@ -21,25 +33,10 @@ func SeedPaymentGateway(db *gorm.DB, count int) {
 	})
 	metaStr := string(meta)
 	// Optional: predefined example
-	sample := models.PaymentGateway{
-		ID:        "PG1",
-		Order:     1,
-		Name:      "Midtrans",
-		Metadata:  &metaStr,
-		IsActive:  true,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	sample := newPaymentGatewaySeed("PG1", 1, "Midtrans", &metaStr, true)
 	items = append(items, sample)
 
-	sample2 := models.PaymentGateway{
-		ID:        "PG2",
-		Order:     2,
-		Name:      "iPaymu",
-		IsActive:  true,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
+	sample2 := newPaymentGatewaySeed("PG2", 2, "iPaymu", nil, true)
 	items = append(items, sample2)
 
 	// for i := 0; i < count; i++ {
