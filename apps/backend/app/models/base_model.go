@@ -8,18 +8,18 @@ import (
 )
 
 type BaseModel struct {
-	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
+	ID        string    `gorm:"type:char(36);primaryKey" json:"id"`
 	CreatedAt time.Time `gorm:"not null" json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type BaseModelWithoutUpdatedAt struct {
-	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
+	ID        string    `gorm:"type:char(36);primaryKey" json:"id"`
 	CreatedAt time.Time `gorm:"not null" json:"created_at"`
 }
 
 type BaseModelWithDeletedAt struct {
-	ID        string         `gorm:"type:uuid;primaryKey" json:"id"`
+	ID        string         `gorm:"type:char(36);primaryKey" json:"id"`
 	CreatedAt time.Time      `gorm:"not null" json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
