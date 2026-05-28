@@ -7,9 +7,6 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     env_file: .env
-    environment:
-      - DB_HOST=dilz_postgres
-      - REDIS_HOST=dilz_redis
     restart: unless-stopped
     volumes:
       - ./storage:/app/storage
